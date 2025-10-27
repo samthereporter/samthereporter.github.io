@@ -77,28 +77,33 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 overflow-hidden">
 
     <!-- 
-      NEW: Brainrot Container 
+      Brainrot Container 
       This is a fixed container that sits behind the quiz.
       It's hidden by default and shown only during the quiz.
     -->
     <div id="brainrot-container" class="hidden fixed inset-0 w-screen h-screen">
+        <!-- 
+          FIXED: Replaced broken Giphy links with new ones from Tenor that allow hotlinking.
+        -->
+        
         <!-- GIF 1: Subway Surfers -->
         <div id="gif-container-1" class="gif-box">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Y5amN6cGU0OHVpZmVvOThkYjVmMjB2MHEyb3M4bTN2MnRocjMxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/n1a2v8n9T8s1A7M2eR/giphy.gif" 
+            <img src="https://media.tenor.com/P-Y3-2-mBUIAAAAC/subway-surfers.gif" 
                  alt="Subway Surfers gameplay"
                  onerror="this.src='https://placehold.co/250x444/000000/ffffff?text=GIF+Failed\nTo+Load'">
         </div>
         <!-- GIF 2: Satisfying Cutting -->
         <div id="gif-container-2" class="gif-box">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2RtcW9mdGNqYjZ5d3NoN25uMnJ1b3RuaDNuYnh0c3Q5aXo4a251eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD4ubUVr1Y5ySsw/giphy.gif" 
-                 alt="Satisfying soap cutting video"
+            <!-- Using kinetic sand cutting as a replacement for the soap cutting GIF -->
+            <img src="https://media.tenor.com/2-oeDN-1gScAAAAC/kinetic-sand-asmr.gif" 
+                 alt="Satisfying kinetic sand cutting video"
                  onerror="this.src='https://placehold.co/250x444/000000/ffffff?text=GIF+Failed\nTo+Load'">
         </div>
     </div>
 
     <!-- 
       Main App Container 
-      MODIFIED: Added `relative z-10` to ensure it stays on top of the brainrot container.
+      Added `relative z-10` to ensure it stays on top of the brainrot container.
     -->
     <div id="app" class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-xl mx-auto relative z-10">
 
