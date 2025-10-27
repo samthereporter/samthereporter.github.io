@@ -30,12 +30,77 @@
             border-color: #ef4444; /* red-500 */
             color: #991b1b; /* red-800 */
         }
+
+        /* Styles for the "brainrot" GIF containers */
+        #brainrot-container {
+            z-index: 0;
+        }
+        .gif-box {
+            position: absolute;
+            width: 20%; /* Adjust width as needed */
+            min-width: 150px; /* Ensure it's not too small on large screens */
+            max-width: 250px;
+            aspect-ratio: 9 / 16; /* Force vertical aspect ratio */
+            overflow: hidden;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border: 2px solid white;
+        }
+        .gif-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Position the GIF boxes */
+        /* On small screens, hide them */
+        @media (max-width: 768px) {
+            .gif-box {
+                display: none;
+            }
+        }
+        /* On medium screens and up, show them */
+        @media (min-width: 769px) {
+            #gif-container-1 {
+                top: 50%;
+                left: 5%;
+                transform: translateY(-50%) rotate(-5deg);
+            }
+            #gif-container-2 {
+                top: 50%;
+                right: 5%;
+                transform: translateY(-50%) rotate(5deg);
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 overflow-hidden">
 
-    <!-- Main App Container -->
-    <div id="app" class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-xl mx-auto">
+    <!-- 
+      NEW: Brainrot Container 
+      This is a fixed container that sits behind the quiz.
+      It's hidden by default and shown only during the quiz.
+    -->
+    <div id="brainrot-container" class="hidden fixed inset-0 w-screen h-screen">
+        <!-- GIF 1: Subway Surfers -->
+        <div id="gif-container-1" class="gif-box">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Y5amN6cGU0OHVpZmVvOThkYjVmMjB2MHEyb3M4bTN2MnRocjMxZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/n1a2v8n9T8s1A7M2eR/giphy.gif" 
+                 alt="Subway Surfers gameplay"
+                 onerror="this.src='https://placehold.co/250x444/000000/ffffff?text=GIF+Failed\nTo+Load'">
+        </div>
+        <!-- GIF 2: Satisfying Cutting -->
+        <div id="gif-container-2" class="gif-box">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2RtcW9mdGNqYjZ5d3NoN25uMnJ1b3RuaDNuYnh0c3Q5aXo4a251eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7aD4ubUVr1Y5ySsw/giphy.gif" 
+                 alt="Satisfying soap cutting video"
+                 onerror="this.src='https://placehold.co/250x444/000000/ffffff?text=GIF+Failed\nTo+Load'">
+        </div>
+    </div>
+
+    <!-- 
+      Main App Container 
+      MODIFIED: Added `relative z-10` to ensure it stays on top of the brainrot container.
+    -->
+    <div id="app" class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-xl mx-auto relative z-10">
 
         <!-- 1. Start Screen -->
         <div id="start-screen">
@@ -91,7 +156,6 @@
     <!-- JavaScript Logic -->
     <script>
         // --- 1. QUIZ DATA ---
-        // This is the JSON data you requested, embedded directly in the script.
         const allQuestions = [
             {
               "questionNumber": 1,
@@ -306,6 +370,9 @@
         const feedbackMessage = document.getElementById('feedback-message');
         const scoreDisplay = document.getElementById('score-display');
 
+        // NEW: Brainrot container reference
+        const brainrotContainer = document.getElementById('brainrot-container');
+
         // --- 4. CORE FUNCTIONS ---
 
         /**
@@ -323,6 +390,9 @@
             startScreen.classList.add('hidden');
             resultsScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
+
+            // NEW: Show the brainrot
+            brainrotContainer.classList.remove('hidden');
             
             // Display the first question
             displayQuestion();
@@ -358,7 +428,7 @@
             if (question.questionType === 'True/False') {
                 options = ['True', 'False'];
             } else {
-                // Shuffle options for multiple choice so the answer isn't always in the same spot
+                // Shuffle options for multiple choice
                 options = [...question.options].sort(() => 0.5 - Math.random());
             }
 
@@ -432,6 +502,10 @@
         function showResults() {
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
+
+            // NEW: Hide the brainrot
+            brainrotContainer.classList.add('hidden');
+
             scoreDisplay.textContent = `You scored ${score} out of ${totalQuestions}.`;
         }
         
@@ -441,7 +515,9 @@
         function restartGame() {
             resultsScreen.classList.add('hidden');
             startScreen.classList.remove('hidden');
-            // The score and questions will be reset when startGame() is called next.
+
+            // NEW: Ensure brainrot is hidden on restart
+            brainrotContainer.classList.add('hidden');
         }
 
         // --- 5. EVENT LISTENERS ---
@@ -452,3 +528,4 @@
     </script>
 </body>
 </html>
+
