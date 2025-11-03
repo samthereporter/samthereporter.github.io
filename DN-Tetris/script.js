@@ -1,5 +1,5 @@
 /* ============================================
-    Husker News Tetris - Final Script (v5)
+    Husker News Tetris - Final Script (v6)
     ============================================
 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -22,68 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameOverTitle = document.getElementById('game-over-title');
     const gameOverMessage = document.getElementById('game-over-message');
     const finalScoreElement = document.getElementById('final-score');
+    
+    // ** NEW: Next piece canvas **
+    const nextPieceCanvas = document.getElementById('next-piece');
+    const nextContext = nextPieceCanvas.getContext('2d');
 
     // --- Game Constants & Shapes ---
     const COLS = 10;
     const ROWS = 20;
     const BLOCK_SIZE = 24;
-    const LINES_TO_WIN = 3;
-    const GAME_TIME_LIMIT = 600; // 10 minutes
-    const QUESTION_TIME_LIMIT = 10; // 10 seconds
+    const LINES_TO_WIN = 5; // ** CHANGED: Win condition is now 5 lines **
+    const GAME_TIME_LIMIT = 600; 
+    const QUESTION_TIME_LIMIT = 10; 
     
-    // Nebraska Colors
     const COLORS = [
-        null, 
-        '#D00000', // Scarlet (I, L)
-        '#000000', // Black (O)
-        '#FDF2D9', // Cream (S, J)
-        '#4d4f53', // Husker Steel (Z)
-        '#FFFFFF', // White (T)
-        '#D00000', 
-        '#FDF2D9'  
+        null, '#D00000', '#000000', '#FDF2D9', '#4d4f53', '#FFFFFF', '#D00000', '#FDF2D9'  
     ];
     
-    // ** FIX 4: Shapes are now defined in square matrices for proper rotation **
     const SHAPES = [
-        [], // Empty
-        [ // I
-            [0,0,0,0],
-            [1,1,1,1],
-            [0,0,0,0],
-            [0,0,0,0]
-        ],
-        [ // O
-            [2,2],
-            [2,2]
-        ],
-        [ // S
-            [0,3,3],
-            [3,3,0],
-            [0,0,0]
-        ],
-        [ // Z
-            [4,4,0],
-            [0,4,4],
-            [0,0,0]
-        ],
-        [ // T
-            [0,5,0],
-            [5,5,5],
-            [0,0,0]
-        ],
-        [ // L
-            [0,0,6],
-            [6,6,6],
-            [0,0,0]
-        ],
-        [ // J
-            [7,0,0],
-            [7,7,7],
-            [0,0,0]
-        ]
+        [],
+        [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
+        [[2,2],[2,2]], // O
+        [[0,3,3],[3,3,0],[0,0,0]], // S
+        [[4,4,0],[0,4,4],[0,0,0]], // Z
+        [[0,5,0],[5,5,5],[0,0,0]], // T
+        [[0,0,6],[6,6,6],[0,0,0]], // L
+        [[7,0,0],[7,7,7],[0,0,0]]  // J
     ];
 
-    // --- Question Bank ---
+    // --- Question Bank (Truncated for brevity) ---
     const questionBank = [
         { question: "How many touchdowns did running back Emmett Johnson score against Northwestern?", options: ["One", "Two", "Three", "Zero"], correctAnswer: 1 },
         { question: "Against Northwestern, what was Kenneth Williams' second-half kickoff return?", options: ["A 50-yard gain", "A tackle at the 20", "A 95-yard touchdown", "A fumble"], correctAnswer: 2 },
@@ -95,16 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
         { question: "USC's 21 points against Nebraska was a season ____ for their offense.", options: ["High", "Average", "Low", "Record"], correctAnswer: 2 },
         { question: "Head Coach Matt Rhule received a contract extension through which season?", options: ["2028", "2030", "2032", "2035"], correctAnswer: 2 },
         { question: "What is the new buyout amount in Matt Rhule's contract extension?", options: ["$5 million", "$10 million", "$15 million", "$20 million"], correctAnswer: 2 },
-        { question: "What was Dylan Raiola's completion record on throws of 15+ yards vs Northwestern?", options: ["5-of-10", "3-of-5", "1-of-6", "0-of-4"], correctAnswer: 2 },
-        { question: "Freshman Donovan Jones finished second on the team in what category vs Northwestern?", options: ["Sacks", "Tackles", "Pass Breakups", "Forced Fumbles"], correctAnswer: 1 },
-        { question: "What did Ceyair Wright do on a third-and-8 in the red zone against Northwestern?", options: ["Get an interception", "Commit pass interference", "Force a field goal", "Record a sack"], correctAnswer: 2 },
-        { question: "USC, who had the No. 1 offense, was held to how many passing yards by the Blackshirts?", options: ["135 yards", "250 yards", "310 yards", "405 yards"], correctAnswer: 0 },
-        { question: "Who did Nebraska play immediately after their win against Northwestern?", options: ["UCLA", "Minnesota", "USC", "Penn State"], correctAnswer: 2 }
     ];
 
     // --- Game State Variables ---
-    let board, score, lines, isGameOver, currentPiece, gameInterval, gameTimer, questionTimer, gameTimeRemaining, isGameTimerRunning;
-    let quizStartTime; // ** FIX 1: Variable for smooth timer
+    let board, score, lines, isGameOver, currentPiece, gameInterval, gameTimer, questionTimer, gameTimeRemaining, isGameTimerRunning, quizStartTime;
+    
+    // ** NEW: Quiz cadence state **
+    let nextPiece;
+    let blocksPlacedSinceQuiz;
+    let quizTriggerCount; // How many blocks to place before next quiz
 
     // --- Game Logic Functions ---
     
@@ -137,6 +103,14 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameTimerRunning = false; 
         board = Array.from({ length: ROWS }, () => Array(COLS).fill(0)); 
         gameTimerElement.textContent = "10:00"; 
+        currentPiece = null; // Game starts with no piece
+        
+        // ** NEW: Set up quiz cadence and next piece **
+        blocksPlacedSinceQuiz = 0;
+        quizTriggerCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
+        nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]);
+        drawNextPiece();
+        
         updateUI(); 
         clearInterval(gameInterval); 
         clearInterval(gameTimer); 
@@ -155,9 +129,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000); 
     }
     
+    // ** UPDATED: Play logic now uses the nextPiece system **
     function play() { 
-        const shape = SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]; 
-        currentPiece = new Piece(shape); 
+        currentPiece = nextPiece; // The next piece becomes current
+        nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]); // Get a new next piece
+        drawNextPiece(); // Update the preview box
         gameInterval = setInterval(gameLoop, 500); 
     }
     
@@ -165,8 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
         movePiece('down'); 
     }
     
+    // ** UPDATED: Show quiz now resets quiz cadence **
     function showQuiz() { 
-        clearInterval(gameInterval); 
+        clearInterval(gameInterval); // Pause the game
         const q = questionBank[Math.floor(Math.random() * questionBank.length)]; 
         questionText.textContent = q.question; 
         answerOptions.innerHTML = ''; 
@@ -178,24 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
             answerOptions.appendChild(button); 
         }); 
         
-        // ** FIX 1: Start smooth timer logic **
         quizStartTime = Date.now();
         questionTimerBar.style.width = '100%';
         quizModal.classList.remove('hidden'); 
 
         questionTimer = setInterval(() => {
-            const timePassed = (Date.now() - quizStartTime) / 1000; // in seconds
+            const timePassed = (Date.now() - quizStartTime) / 1000;
             const timeRemaining = QUESTION_TIME_LIMIT - timePassed;
             const widthPercent = Math.max(0, (timeRemaining / QUESTION_TIME_LIMIT) * 100);
-            
             questionTimerBar.style.width = `${widthPercent}%`;
             
-            if (timeRemaining <= 0) {
-                checkAnswer(false, "You ran out of time!");
-            }
-        }, 50); // Check 20 times per second
+            if (timeRemaining <= 0) checkAnswer(false, "You ran out of time!");
+        }, 50);
+        
+        // ** NEW: Reset quiz counter for the *next* round **
+        blocksPlacedSinceQuiz = 0;
+        quizTriggerCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
     }
     
+    // ** UPDATED: Check answer logic is now simpler **
     function checkAnswer(isCorrect, message = "Incorrect answer!") { 
         clearInterval(questionTimer); 
         quizModal.classList.add('hidden'); 
@@ -205,13 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 gameTimeRemaining = GAME_TIME_LIMIT; 
                 startGameTimer(); 
                 isGameTimerRunning = true; 
-            } 
-            play(); 
+            }
+            
+            if (!currentPiece) {
+                play(); // This is the first piece of the game
+            } else {
+                gameInterval = setInterval(gameLoop, 500); // Resume the paused piece
+            }
         } else { 
             gameOver(message); 
         } 
     }
     
+    // ** UPDATED: Move piece now handles quiz cadence logic **
     function movePiece(direction) { 
         if (isGameOver) return; 
         let { x, y, shape } = currentPiece; 
@@ -222,15 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'down': y++; break; 
             case 'rotate': 
                 shape = rotate(shape); 
-                // Basic wall kick: if rotation collides, try moving 1 left or 1 right
                 if (collision(x, y, shape)) {
-                    if (!collision(x - 1, y, shape)) {
-                        x--; // Kick left
-                    } else if (!collision(x + 1, y, shape)) {
-                        x++; // Kick right
-                    } else {
-                        shape = currentPiece.shape; // Can't rotate, revert
-                    }
+                    if (!collision(x - 1, y, shape)) x--;
+                    else if (!collision(x + 1, y, shape)) x++;
+                    else shape = currentPiece.shape;
                 }
                 break; 
         } 
@@ -242,7 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (direction === 'down') { 
             lockPiece(); 
             clearLines(); 
-            if (!isGameOver) showQuiz(); 
+            
+            if (isGameOver) return; // Stop if game was won
+
+            // ** NEW: Check if it's time for a quiz **
+            if (blocksPlacedSinceQuiz >= quizTriggerCount) {
+                showQuiz();
+            } else {
+                play(); // No quiz, just start the next piece
+            }
         } 
         draw(); 
     }
@@ -254,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    ((y + row >= ROWS) ||
                     (x + col < 0) ||
                     (x + col >= COLS) ||
-                    (board[y + row] && board[y + row][x + col]))) // Check if board[y+row] exists
+                    (board[y + row] && board[y + row][x + col])))
                 { 
                     return true; 
                 } 
@@ -263,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return false; 
     }
     
-    // ** FIX 4: Correct rotation for square matrices **
     function rotate(matrix) {
         const N = matrix.length;
         const result = matrix.map((_, i) => matrix.map(col => null));
@@ -275,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
     
+    // ** UPDATED: Lock piece now increments the quiz counter **
     function lockPiece() { 
         clearInterval(gameInterval); 
         currentPiece.shape.forEach((row, y) => { 
@@ -289,9 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } 
             }); 
-        }); 
+        });
+        
+        // ** NEW: Count this piece toward the next quiz **
+        blocksPlacedSinceQuiz++;
     }
     
+    // ** UPDATED: Win condition is now 5 lines **
     function clearLines() { 
         let linesCleared = 0; 
         for (let y = ROWS - 1; y >= 0; y--) { 
@@ -309,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI(); 
             showGoBigRed(); 
             if (lines >= LINES_TO_WIN) {
-                gameOver("You cleared 3 lines! You win!", "Congratulations!"); 
+                gameOver(`You cleared ${LINES_TO_WIN} lines! You win!`, "Congratulations!"); 
             }
         } 
     }
@@ -321,9 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500); 
     }
     
+    // ** UPDATED: Main draw function now calls ghost piece **
     function draw() { 
         context.clearRect(0, 0, canvas.width, canvas.height); 
         drawBoard(); 
+        drawGhostPiece(); // ** NEW: Draw the shadow **
         if(currentPiece) currentPiece.draw(); 
     }
     
@@ -338,6 +331,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
             }); 
         }); 
+    }
+
+    // ** NEW: Function to draw the "Next Piece" preview **
+    function drawNextPiece() {
+        nextContext.clearRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
+        if (!nextPiece) return;
+
+        const shape = nextPiece.shape;
+        const color = nextPiece.color;
+        const size = BLOCK_SIZE * 0.8; // Make it a bit smaller for the box
+        
+        // Calculate offset to center the piece
+        const shapeWidth = (shape[0] ? shape[0].length : 0) * size;
+        const shapeHeight = shape.length * size;
+        const startX = (nextPieceCanvas.width - shapeWidth) / 2;
+        const startY = (nextPieceCanvas.height - shapeHeight) / 2;
+
+        nextContext.fillStyle = color;
+        nextContext.strokeStyle = '#3f3f46'; // Use border color
+        shape.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value > 0) {
+                    nextContext.fillRect(startX + x * size, startY + y * size, size, size);
+                    nextContext.strokeRect(startX + x * size, startY + y * size, size, size);
+                }
+            });
+        });
+    }
+
+    // ** NEW: Function to draw the "Ghost Piece" shadow **
+    function drawGhostPiece() {
+        if (!currentPiece) return;
+        
+        let ghostY = currentPiece.y;
+        // Move the ghost piece down until it collides
+        while (!collision(currentPiece.x, ghostY + 1, currentPiece.shape)) {
+            ghostY++;
+        }
+
+        // Now draw the piece at (currentPiece.x, ghostY) with transparency
+        context.globalAlpha = 0.3; // Set transparency
+        context.fillStyle = currentPiece.color;
+        currentPiece.shape.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value > 0) {
+                    context.fillRect((currentPiece.x + x) * BLOCK_SIZE, (ghostY + y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                }
+            });
+        });
+        context.globalAlpha = 1.0; // Reset transparency
     }
     
     function updateUI() { 
@@ -359,14 +402,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // --- Event Listeners ---
-    
     document.addEventListener('keydown', (e) => { 
-        // ** FIX 2: Check if quiz modal is active. If it is, do nothing. **
         if (isGameOver || !quizModal.classList.contains('hidden')) {
             return;
         }
-        
-        // Only allow key controls if a piece is active
         if (!currentPiece) return;
 
         if (e.key === 'ArrowLeft') movePiece('left'); 
@@ -374,18 +413,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowDown') movePiece('down'); 
         if (e.key === 'ArrowUp') movePiece('rotate'); 
 
-        // ** FIX 3: Add Spacebar for hard drop **
         if (e.key === ' ' || e.key === 'Spacebar') {
-            e.preventDefault(); // Stop page from scrolling
+            e.preventDefault(); 
             let rowsDropped = 0;
-            // Drop until it collides
             while (!collision(currentPiece.x, currentPiece.y + 1, currentPiece.shape)) {
                 currentPiece.y++;
                 rowsDropped++;
             }
-            score += rowsDropped; // Add 1 point per row dropped
+            score += rowsDropped; 
             updateUI();
-            movePiece('down'); // Call 'down' one last time to lock it and trigger next quiz
+            
+            // Manually trigger the "down" collision logic
+            movePiece('down');
         }
     });
 
@@ -393,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.addEventListener('click', () => {
             instructionsModal.classList.add('hidden');
             resetGame();
-            showQuiz(); // Go straight to the first quiz
+            showQuiz(); // Start with the first quiz
         });
     } else {
         console.error("FATAL ERROR: Start button with id 'start-button' not found!");
@@ -409,6 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initial Game State ---
-    console.log("Husker News Tetris initialized successfully (v5). Ready to play!");
-    resetGame(); // Set the initial board state on load
+    console.log("Husker News Tetris initialized successfully (v6). Ready to play!");
+    resetGame(); 
 });
