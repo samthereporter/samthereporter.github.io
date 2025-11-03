@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameTimer;
     let questionTimer;
     let gameTimeRemaining;
-    let isGameTimerRunning = false; // ** NEW: Tracks if the main 10-min timer has started
+    let isGameTimerRunning = false; 
 
     class Piece {
         constructor(shape, context) {
@@ -163,17 +163,15 @@ document.addEventListener('DOMContentLoaded', () => {
         score = 0;
         lines = 0;
         isGameOver = false;
-        isGameTimerRunning = false; // ** MODIFIED: Reset timer flag
+        isGameTimerRunning = false; 
         board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        gameTimerElement.textContent = "10:00"; // Reset timer display
+        gameTimerElement.textContent = "10:00"; 
         updateUI();
         clearInterval(gameInterval);
         clearInterval(gameTimer);
         clearInterval(questionTimer);
         gameOverModal.classList.add('hidden');
     }
-
-    // ** REMOVED: The old startGame() function is no longer needed
 
     function startGameTimer() {
         gameTimer = setInterval(() => {
@@ -234,14 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(questionTimer);
         quizModal.classList.add('hidden');
         if (isCorrect) {
-            // ** NEW LOGIC: Start the main game timer only if it's not already running
             if (!isGameTimerRunning) {
                 gameTimeRemaining = GAME_TIME_LIMIT;
                 startGameTimer();
                 isGameTimerRunning = true;
             }
-            // ** END NEW LOGIC
-            play(); // Start the Tetris piece drop
+            play(); 
         } else {
             gameOver(message);
         }
@@ -393,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowUp') movePiece('rotate');
     });
 
-    // ** MODIFIED: This listener now starts the quiz, not the game.
     startButton.addEventListener('click', () => {
         instructionsModal.classList.add('hidden');
         resetGame();
