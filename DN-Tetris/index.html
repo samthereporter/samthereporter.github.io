@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    
+    <!-- Canvas for the confetti effect. Sits on top of everything. -->
+    <canvas id="confetti-canvas"></canvas>
 
     <div class="container">
         <header>
@@ -18,11 +21,13 @@
         </header>
         
         <main>
-            <canvas id="tetris" width="240" height="480"></canvas>
+            <!-- Game board is now larger: 320x640 -->
+            <canvas id="tetris" width="320" height="640"></canvas>
             
             <div id="info-panel">
                 <h4>Next Piece</h4>
-                <canvas id="next-piece" width="120" height="96"></canvas>
+                <!-- Next piece canvas is also larger: 160x128 -->
+                <canvas id="next-piece" width="160" height="128"></canvas>
 
                 <div class="stat-card">
                     <h4>Score</h4>
@@ -40,6 +45,9 @@
                 </div>
             </div>
         </main>
+        
+        <!-- "Go Big Red" is now a non-modal message below the game -->
+        <h1 id="gbr-message" class="hidden">📣 GO BIG RED 📢</h1>
     </div>
 
     <!-- Modal for Instructions -->
@@ -69,23 +77,22 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal for "GO BIG RED" -->
-    <div id="line-clear-modal" class="modal hidden">
-        <div class="modal-content gbr">
-            <h1>GO BIG RED</h1>
-        </div>
-    </div>
     
+    <!-- NOTE: The "Go Big Red" modal has been removed -->
+
     <!-- Modal for Game Over -->
     <div id="game-over-modal" class="modal hidden">
         <div class="modal-content">
             <h2 id="game-over-title">Game Over</h2>
             <p id="game-over-message">Your final score: <span id="final-score">0</span></p>
             <button id="restart-button">Play Again</button>
+            <!-- New "Share" button -->
+            <button id="share-button">Share Your Score</button>
         </div>
     </div>
 
-    <script src="script.js?v=5"></script> <!-- Added ?v=5 to break cache -->
+    <!-- We're now on v8 to bust the cache -->
+    <script src="script.js?v=8"></script> 
 </body>
 </html>
+

@@ -1,5 +1,5 @@
 /* ============================================
-    Husker News Tetris - Final Script (v7 - Bug Fix)
+    Husker News Tetris - Final Script (v8)
     ============================================
 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameTimerElement = document.getElementById('game-timer');
     const instructionsModal = document.getElementById('instructions-modal');
     const quizModal = document.getElementById('quiz-modal');
-    const lineClearModal = document.getElementById('line-clear-modal');
     const gameOverModal = document.getElementById('game-over-modal');
     const startButton = document.getElementById('start-button');
     const restartButton = document.getElementById('restart-button');
@@ -24,39 +23,73 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalScoreElement = document.getElementById('final-score');
     const nextPieceCanvas = document.getElementById('next-piece');
     const nextContext = nextPieceCanvas.getContext('2d');
+    
+    // ** NEW: References for new features **
+    const gbrMessage = document.getElementById('gbr-message');
+    const shareButton = document.getElementById('share-button');
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiContext = confettiCanvas.getContext('2d');
 
     // --- Game Constants & Shapes ---
     const COLS = 10;
     const ROWS = 20;
-    const BLOCK_SIZE = 24;
+    const BLOCK_SIZE = 32; // ** INCREASED GAME SIZE **
     const LINES_TO_WIN = 5; 
     const GAME_TIME_LIMIT = 600; 
     const QUESTION_TIME_LIMIT = 10; 
     
-    // ** BUG FIX: Changed 'O' piece color from black to scarlet **
+    // ** FIX: O-piece (index 2) is now Scarlet.
     const COLORS = [
         null, 
-        '#D00000', // 1: I (Scarlet)
-        '#D00000', // 2: O (WAS BLACK, NOW SCARLET)
-        '#FDF2D9', // 3: S (Cream)
-        '#4d4f53', // 4: Z (Husker Steel)
-        '#FFFFFF', // 5: T (White)
-        '#D00000', // 6: L (Scarlet)
-        '#FDF2D9'  // 7: J (Cream)
+        '#D00000', // Scarlet (I)
+        '#D00000', // Scarlet (O) - WAS BLACK
+        '#FDF2D9', // Cream (S)
+        '#4d4f53', // Husker Steel (Z)
+        '#FFFFFF', // White (T)
+        '#D00000', // Scarlet (L)
+        '#FDF2D9'  // Cream (J)
     ];
     
     const SHAPES = [
-        [],
-        [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I
-        [[2,2],[2,2]], // O
-        [[0,3,3],[3,3,0],[0,0,0]], // S
-        [[4,4,0],[0,4,4],[0,0,0]], // Z
-        [[0,5,0],[5,5,5],[0,0,0]], // T
-        [[0,0,6],[6,6,6],[0,0,0]], // L
-        [[7,0,0],[7,7,7],[0,0,0]]  // J
+        [], // Empty
+        [ // I
+            [0,0,0,0],
+            [1,1,1,1],
+            [0,0,0,0],
+            [0,0,0,0]
+        ],
+        [ // O
+            [2,2],
+            [2,2]
+        ],
+        [ // S
+            [0,3,3],
+            [3,3,0],
+            [0,0,0]
+        ],
+        [ // Z
+            [4,4,0],
+            [0,4,4],
+            [0,0,0]
+        ],
+        [ // T
+            [0,5,0],
+            [5,5,5],
+            [0,0,0]
+        ],
+        [ // L
+            [0,0,6],
+            [6,6,6],
+            [0,0,0]
+        ],
+        [ // J
+            [7,0,0],
+            [7,7,7],
+            [0,0,0]
+        ]
     ];
 
-    // --- Question Bank (Truncated) ---
+    // --- Question Bank ---
     const questionBank = [
         { question: "How many touchdowns did running back Emmett Johnson score against Northwestern?", options: ["One", "Two", "Three", "Zero"], correctAnswer: 1 },
         { question: "Against Northwestern, what was Kenneth Williams' second-half kickoff return?", options: ["A 50-yard gain", "A tackle at the 20", "A 95-yard touchdown", "A fumble"], correctAnswer: 2 },
@@ -65,11 +98,23 @@ document.addEventListener('DOMContentLoaded', () => {
         { question: "What season-ending injury did quarterback Dylan Raiola suffer?", options: ["Torn ACL", "Broken Collarbone", "Concussion", "Broken Fibula"], correctAnswer: 3 },
         { question: "Who took over at quarterback for Nebraska after Dylan Raiola's injury?", options: ["Chubba Purdy", "TJ Lateef", "Heinrich Haarberg", "Jeff Sims"], correctAnswer: 1 },
         { question: "Against USC, how many sacks did the Husker pass rush record?", options: ["Zero", "One", "Two", "Three"], correctAnswer: 3 },
+        { question: "USC's 21 points against Nebraska was a season ____ for their offense.", options: ["High", "Average", "Low", "Record"], correctAnswer: 2 },
+        { question: "Head Coach Matt Rhule received a contract extension through which season?", options: ["2028", "2030", "2032", "2035"], correctAnswer: 2 },
+        { question: "What is the new buyout amount in Matt Rhule's contract extension?", options: ["$5 million", "$10 million", "$15 million", "$20 million"], correctAnswer: 2 },
+        { question: "What was Dylan Raiola's completion record on throws of 15+ yards vs Northwestern?", options: ["5-of-10", "3-of-5", "1-of-6", "0-of-4"], correctAnswer: 2 },
+        { question: "Freshman Donovan Jones finished second on the team in what category vs Northwestern?", options: ["Sacks", "Tackles", "Pass Breakups", "Forced Fumbles"], correctAnswer: 1 },
+        { question: "What did Ceyair Wright do on a third-and-8 in the red zone against Northwestern?", options: ["Get an interception", "Commit pass interference", "Force a field goal", "Record a sack"], correctAnswer: 2 },
+        { question: "USC, who had the No. 1 offense, was held to how many passing yards by the Blackshirts?", options: ["135 yards", "250 yards", "310 yards", "405 yards"], correctAnswer: 0 },
+        { question: "Who did Nebraska play immediately after their win against Northwestern?", options: ["UCLA", "Minnesota", "USC", "Penn State"], correctAnswer: 2 }
     ];
 
     // --- Game State Variables ---
     let board, score, lines, isGameOver, currentPiece, gameInterval, gameTimer, questionTimer, gameTimeRemaining, isGameTimerRunning, quizStartTime;
     let nextPiece, blocksPlacedSinceQuiz, quizTriggerCount;
+
+    // --- Confetti Variables ---
+    let confettiParticles = [];
+    const CONFETTI_COLORS = ['#D00000', '#FDF2D9', '#000000', '#FFFFFF'];
 
     // --- Game Logic Functions ---
     
@@ -82,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         draw() { 
-            // ** BUG FIX: Explicitly set alpha to 1.0 for the active piece **
+            // ** FIX: Always reset globalAlpha to 1.0 before drawing a real piece **
             context.globalAlpha = 1.0; 
             context.fillStyle = this.color; 
             context.strokeStyle = '#000';
@@ -106,14 +151,18 @@ document.addEventListener('DOMContentLoaded', () => {
         gameTimerElement.textContent = "10:00"; 
         currentPiece = null; 
         blocksPlacedSinceQuiz = 0;
-        quizTriggerCount = Math.floor(Math.random() * 2) + 3; 
+        quizTriggerCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
+        
+        // Generate first two pieces
         nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]);
         drawNextPiece();
+        
         updateUI(); 
         clearInterval(gameInterval); 
         clearInterval(gameTimer); 
         clearInterval(questionTimer); 
         gameOverModal.classList.add('hidden'); 
+        gbrMessage.classList.add('hidden'); // Hide GBR message
         draw(); 
     }
     
@@ -128,9 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function play() { 
+        // Move next piece to current and generate a new next piece
         currentPiece = nextPiece; 
         nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]); 
+        
+        // Draw the new next piece
         drawNextPiece(); 
+        
+        // Start the game loop
         gameInterval = setInterval(gameLoop, 500); 
     }
     
@@ -164,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (timeRemaining <= 0) checkAnswer(false, "You ran out of time!");
         }, 50);
         
+        // Reset quiz counter
         blocksPlacedSinceQuiz = 0;
         quizTriggerCount = Math.floor(Math.random() * 2) + 3; 
     }
@@ -178,9 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGameTimer(); 
                 isGameTimerRunning = true; 
             }
+            // Check if a piece is already playing (which it shouldn't be)
             if (!currentPiece) {
                 play(); 
             } else {
+                // Resume game loop if piece was just paused
                 gameInterval = setInterval(gameLoop, 500); 
             }
         } else { 
@@ -214,10 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
             lockPiece(); 
             clearLines(); 
             if (isGameOver) return;
+            
+            // Check if it's time for a quiz
             if (blocksPlacedSinceQuiz >= quizTriggerCount) {
                 showQuiz();
             } else {
-                play();
+                play(); // Spawn next piece
             }
         } 
         draw(); 
@@ -285,19 +344,22 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI(); 
             showGoBigRed(); 
             if (lines >= LINES_TO_WIN) {
-                gameOver(`You cleared ${LINES_TO_WIN} lines! You win!`, "Congratulations!"); 
+                gameOver(`You cleared ${LINES_TO_WIN} lines! You win!`, "Congratulations! 🎉💯"); 
             }
         } 
     }
     
+    // ** UPDATED: "Go Big Red" now uses the new message div **
     function showGoBigRed() { 
-        lineClearModal.classList.remove('hidden'); 
+        gbrMessage.classList.remove('hidden'); 
         setTimeout(() => { 
-            lineClearModal.classList.add('hidden'); 
+            gbrMessage.classList.add('hidden'); 
         }, 1500); 
     }
     
     function draw() { 
+        // ** FIX: Reset alpha before clearing **
+        context.globalAlpha = 1.0;
         context.clearRect(0, 0, canvas.width, canvas.height); 
         drawBoard(); 
         drawGhostPiece(); 
@@ -305,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function drawBoard() { 
-        // ** BUG FIX: Explicitly set alpha to 1.0 for the board **
+        // ** FIX: Ensure alpha is 1.0 when drawing locked pieces **
         context.globalAlpha = 1.0;
         board.forEach((row, y) => { 
             row.forEach((value, x) => { 
@@ -322,9 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function drawNextPiece() {
         nextContext.clearRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
         if (!nextPiece) return;
+        
         const shape = nextPiece.shape;
-        const color = nextPiece.color;
+        // ** FIX: Use the correct color from the COLORS array **
+        const color = COLORS[SHAPES.indexOf(shape)]; 
         const size = BLOCK_SIZE * 0.8; 
+        
+        // Center the piece
         const shapeWidth = (shape[0] ? shape[0].length : 0) * size;
         const shapeHeight = shape.length * size;
         const startX = (nextPieceCanvas.width - shapeWidth) / 2;
@@ -332,6 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         nextContext.fillStyle = color;
         nextContext.strokeStyle = '#3f3f46';
+        
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value > 0) {
@@ -346,12 +413,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPiece) return;
         
         let ghostY = currentPiece.y;
+        // Find where the piece will land
         while (!collision(currentPiece.x, ghostY + 1, currentPiece.shape)) {
             ghostY++;
         }
-
+        
         context.globalAlpha = 0.3; // Set transparency
         context.fillStyle = currentPiece.color;
+        
         currentPiece.shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value > 0) {
@@ -359,7 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-        // ** BUG FIX: Reset alpha immediately after use **
+        
+        // ** FIX: Reset alpha to 1.0 after drawing ghost **
         context.globalAlpha = 1.0; 
     }
     
@@ -368,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         linesElement.textContent = lines; 
     }
     
+    // ** UPDATED: Game Over now triggers confetti on win **
     function gameOver(message = "Game Over", title = "Game Over") { 
         isGameOver = true; 
         clearInterval(gameInterval); 
@@ -379,13 +450,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         finalScoreElement.textContent = score; 
         gameOverModal.classList.remove('hidden'); 
+        
+        // ** NEW: Check for win and trigger confetti **
+        if (lines >= LINES_TO_WIN) {
+            triggerConfetti();
+        }
+    }
+
+    // --- NEW: Confetti Functions ---
+    function createConfettiParticle() {
+        const x = Math.random() * confettiCanvas.width;
+        const y = Math.random() * confettiCanvas.height - confettiCanvas.height; // Start off-screen
+        const vx = (Math.random() - 0.5) * 10;
+        const vy = Math.random() * 5 + 5; // Fall down
+        const size = Math.random() * 8 + 4;
+        const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+        const life = 100; // Frames to live
+        return { x, y, vx, vy, size, color, life };
+    }
+
+    function triggerConfetti() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+        confettiParticles = [];
+        for (let i = 0; i < 200; i++) {
+            confettiParticles.push(createConfettiParticle());
+        }
+        animateConfetti();
+    }
+
+    function animateConfetti() {
+        confettiContext.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        
+        confettiParticles.forEach((p, index) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            
+            p.vy += 0.1; // Gravity
+            p.vx *= 0.99; // Air resistance
+
+            if (p.life <= 0) {
+                confettiParticles.splice(index, 1);
+            } else {
+                confettiContext.fillStyle = p.color;
+                confettiContext.globalAlpha = p.life / 100; // Fade out
+                confettiContext.beginPath();
+                confettiContext.rect(p.x, p.y, p.size, p.size);
+                confettiContext.fill();
+            }
+        });
+
+        if (confettiParticles.length > 0) {
+            requestAnimationFrame(animateConfetti);
+        } else {
+            confettiContext.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        }
     }
     
     // --- Event Listeners ---
     document.addEventListener('keydown', (e) => { 
-        if (isGameOver || !quizModal.classList.contains('hidden')) {
-            return;
-        }
+        if (isGameOver || !quizModal.classList.contains('hidden')) return;
         if (!currentPiece) return;
 
         if (e.key === 'ArrowLeft') movePiece('left'); 
@@ -410,23 +535,51 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.addEventListener('click', () => {
             instructionsModal.classList.add('hidden');
             resetGame();
-            showQuiz(); // Start with the first quiz
+            showQuiz(); 
         });
-    } else {
-        console.error("FATAL ERROR: Start button with id 'start-button' not found!");
     }
-    
+
+    // ** UPDATED: Restart button now forces a hard reload **
     if (restartButton) {
         restartButton.addEventListener('click', () => {
-            gameOverModal.classList.add('hidden');
-            instructionsModal.classList.remove('hidden');
+            location.reload(); // This is the simplest and most effective way
         });
-    } else {
-        console.error("Error: Restart button with id 'restart-button' not found!");
+    }
+
+    // ** NEW: Share button logic **
+    if (shareButton) {
+        shareButton.addEventListener('click', () => {
+            const shareText = `I cleared ${lines} lines with a score of ${score} in the Husker News Tetris game! Can you beat me?`;
+            
+            // Use the reliable 'execCommand' method
+            const textArea = document.createElement('textarea');
+            textArea.value = shareText;
+            textArea.style.position = 'fixed'; // Make it invisible
+            textArea.style.top = '-9999px';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                shareButton.textContent = 'Copied to Clipboard!';
+            } catch (err) {
+                shareButton.textContent = 'Copy Failed!';
+                console.error('Failed to copy score: ', err);
+            }
+            
+            document.body.removeChild(textArea);
+
+            // Reset button text after 2 seconds
+            setTimeout(() => {
+                shareButton.textContent = 'Share Your Score';
+            }, 2000);
+        });
     }
 
     // --- Initial Game State ---
-    console.log("Husker News Tetris initialized successfully (v7). Ready to play!");
+    console.log("Husker News Tetris initialized successfully (v8). Ready to play!");
     resetGame(); 
 });
 
