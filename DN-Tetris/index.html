@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Nebraskan - Husker News Tetris</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Daily Nebraskan</h1>
+        <h2>Husker News Tetris</h2>
+    </header>
+    <main>
+        <canvas id="tetris" width="240" height="480"></canvas>
+        <div id="info-panel">
+            <h3>Score: <span id="score">0</span></h3>
+            <h3>Lines: <span id="lines">0</span></h3>
+            <div id="game-timer-container">
+                <h4>Game Time Remaining</h4>
+                <div id="game-timer">10:00</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="instructions-modal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to Husker News Tetris!</h2>
+            <p>Here's how to play:</p>
+            <ul>
+                <li>Answer a multiple-choice question before each block drops.</li>
+                <li>You have <strong>10 seconds</strong> to answer. A wrong answer ends the game!</li>
+                <li>Use the <strong>Arrow Keys</strong> to control the block:
+                    <ul>
+                        <li><strong>Left/Right:</strong> Move the block.</li>
+                        <li><strong>Up:</strong> Rotate the block.</li>
+                        <li><strong>Down:</strong> Speed up the block's descent.</li>
+                    </ul>
+                </li>
+                <li>Clear lines by filling a horizontal row with blocks.</li>
+                <li>The game ends when you clear <strong>3 lines</strong> or when the 10-minute timer runs out.</li>
+            </ul>
+            <button id="start-button">Start Game</button>
+        </div>
+    </div>
+
+    <div id="quiz-modal" class="modal hidden">
+        <div class="modal-content">
+            <div id="question-timer-bar"></div>
+            <h3 id="question-text">Question goes here...</h3>
+            <div id="answer-options">
+                </div>
+        </div>
+    </div>
+
+    <div id="line-clear-modal" class="modal hidden">
+        <div class="modal-content gbr">
+            <h1>GO BIG RED</h1>
+        </div>
+    </div>
+    
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="game-over-title">Game Over</h2>
+            <p id="game-over-message">Your final score: <span id="final-score">0</span></p>
+            <button id="restart-button">Play Again</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
