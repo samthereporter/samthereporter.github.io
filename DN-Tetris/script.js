@@ -48,77 +48,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add more questions here to expand the game
     const questionBank = [
         {
-            [cite_start]question: "How many touchdowns did running back Emmett Johnson score against Northwestern? [cite: 9, 10]",
+            question: "How many touchdowns did running back Emmett Johnson score against Northwestern?",
             options: ["One", "Two", "Three", "Zero"],
             correctAnswer: 1
         },
         {
-            [cite_start]question: "Against Northwestern, what was the result of Kenneth Williams' second-half kickoff return? [cite: 15]",
+            question: "Against Northwestern, what was the result of Kenneth Williams' second-half kickoff return?",
             options: ["A 50-yard gain", "A tackle at the 20", "A 95-yard touchdown", "A fumble"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "Javin Wright's crucial interception against Northwestern came on what down? [cite: 25]",
+            question: "Javin Wright's crucial interception against Northwestern came on what down?",
             options: ["First-and-10", "Second-and-5", "Third-and-12", "Fourth-and-1"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "How many sacks did Nebraska's defense record against Northwestern? [cite: 48]",
+            question: "How many sacks did Nebraska's defense record against Northwestern?",
             options: ["Zero", "One", "Three", "Five"],
             correctAnswer: 0
         },
         {
-            [cite_start]question: "What injury did quarterback Dylan Raiola suffer, ending his season? [cite: 85]",
+            question: "What injury did quarterback Dylan Raiola suffer, ending his season?",
             options: ["Torn ACL", "Broken Collarbone", "Concussion", "Broken Fibula"],
             correctAnswer: 3
         },
         {
-            [cite_start]question: "Who took over at quarterback for Nebraska after Dylan Raiola's injury? [cite: 89]",
+            question: "Who took over at quarterback for Nebraska after Dylan Raiola's injury?",
             options: ["Chubba Purdy", "TJ Lateef", "Heinrich Haarberg", "Jeff Sims"],
             correctAnswer: 1
         },
         {
-            [cite_start]question: "Against USC, how many sacks did the Husker pass rush record? [cite: 119]",
+            question: "Against USC, how many sacks did the Husker pass rush record?",
             options: ["Zero", "One", "Two", "Three"],
             correctAnswer: 3
         },
         {
-            [cite_start]question: "USC's 21 points against Nebraska was a season ____ for their offense. [cite: 115]",
+            question: "USC's 21 points against Nebraska was a season ____ for their offense.",
             options: ["High", "Average", "Low", "Record"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "Head Coach Matt Rhule received a contract extension through which season? [cite: 126]",
+            question: "Head Coach Matt Rhule received a contract extension through which season?",
             options: ["2028", "2030", "2032", "2035"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "What is the new buyout amount in Matt Rhule's contract extension? [cite: 127]",
+            question: "What is the new buyout amount in Matt Rhule's contract extension?",
             options: ["$5 million", "$10 million", "$15 million", "$20 million"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "What was quarterback Dylan Raiola's completion record on throws of 15+ yards against Northwestern? [cite: 75]",
+            question: "What was quarterback Dylan Raiola's completion record on throws of 15+ yards against Northwestern?",
             options: ["5-of-10", "3-of-5", "1-of-6", "0-of-4"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "Freshman Donovan Jones had a key interception against Northwestern and finished second on the team in what category? [cite: 37]",
+            question: "Freshman Donovan Jones had a key interception against Northwestern and finished second on the team in what category?",
             options: ["Sacks", "Tackles", "Pass Breakups", "Forced Fumbles"],
             correctAnswer: 1
         },
         {
-            [cite_start]question: "What did Ceyair Wright do on a third-and-8 in the red zone against Northwestern? [cite: 30]",
+            question: "What did Ceyair Wright do on a third-and-8 in the red zone against Northwestern?",
             options: ["Get an interception", "Commit pass interference", "Force a field goal with tight coverage", "Record a sack"],
             correctAnswer: 2
         },
         {
-            [cite_start]question: "USC, who had the No. 1 offense in the country, was held to how many passing yards by the Blackshirts? [cite: 113, 114]",
+            question: "USC, who had the No. 1 offense in the country, was held to how many passing yards by the Blackshirts?",
             options: ["135 yards", "250 yards", "310 yards", "405 yards"],
             correctAnswer: 0
         },
         {
-            [cite_start]question: "Who did Nebraska play immediately after their win against Northwestern? [cite: 135]",
+            question: "Who did Nebraska play immediately after their win against Northwestern?",
             options: ["UCLA", "Minnesota", "USC", "Penn State"],
             correctAnswer: 2
         }
@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameTimer;
     let questionTimer;
     let gameTimeRemaining;
+    let isGameTimerRunning = false; // ** NEW: Tracks if the main 10-min timer has started
 
     class Piece {
         constructor(shape, context) {
@@ -162,7 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
         score = 0;
         lines = 0;
         isGameOver = false;
+        isGameTimerRunning = false; // ** MODIFIED: Reset timer flag
         board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        gameTimerElement.textContent = "10:00"; // Reset timer display
         updateUI();
         clearInterval(gameInterval);
         clearInterval(gameTimer);
@@ -170,14 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
         gameOverModal.classList.add('hidden');
     }
 
-    function startGame() {
-        instructionsModal.classList.add('hidden');
-        resetGame();
-        gameTimeRemaining = GAME_TIME_LIMIT;
-        startNextTurn();
-        startGameTimer();
-    }
-    
+    // ** REMOVED: The old startGame() function is no longer needed
+
     function startGameTimer() {
         gameTimer = setInterval(() => {
             gameTimeRemaining--;
@@ -207,8 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function showQuiz() {
         clearInterval(gameInterval);
-        const randomQuestion = questionBank[Math.floor(Math.random() * questionBank.length)];
-        questionText.textContent = randomQuestion.question;
+        // Remove citations from question text for display
+        const randomQuestion = JSON.parse(JSON.stringify(questionBank[Math.floor(Math.random() * questionBank.length)]));
+        questionText.textContent = randomQuestion.question.replace(/ \/g, '');
+
         answerOptions.innerHTML = '';
 
         randomQuestion.options.forEach((option, index) => {
@@ -235,7 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(questionTimer);
         quizModal.classList.add('hidden');
         if (isCorrect) {
-            play();
+            // ** NEW LOGIC: Start the main game timer only if it's not already running
+            if (!isGameTimerRunning) {
+                gameTimeRemaining = GAME_TIME_LIMIT;
+                startGameTimer();
+                isGameTimerRunning = true;
+            }
+            // ** END NEW LOGIC
+            play(); // Start the Tetris piece drop
         } else {
             gameOver(message);
         }
@@ -387,7 +393,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowUp') movePiece('rotate');
     });
 
-    startButton.addEventListener('click', startGame);
+    // ** MODIFIED: This listener now starts the quiz, not the game.
+    startButton.addEventListener('click', () => {
+        instructionsModal.classList.add('hidden');
+        resetGame();
+        showQuiz(); // Go straight to the first quiz
+    });
+    
     restartButton.addEventListener('click', () => {
         gameOverModal.classList.add('hidden');
         instructionsModal.classList.remove('hidden');
