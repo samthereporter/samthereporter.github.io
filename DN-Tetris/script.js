@@ -1,5 +1,5 @@
 /* ============================================
-    Husker News Tetris - Final Script (v6)
+    Husker News Tetris - Final Script (v7 - Bug Fix)
     ============================================
 */
 document.addEventListener('DOMContentLoaded', () => {
@@ -22,8 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameOverTitle = document.getElementById('game-over-title');
     const gameOverMessage = document.getElementById('game-over-message');
     const finalScoreElement = document.getElementById('final-score');
-    
-    // ** NEW: Next piece canvas **
     const nextPieceCanvas = document.getElementById('next-piece');
     const nextContext = nextPieceCanvas.getContext('2d');
 
@@ -31,12 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const COLS = 10;
     const ROWS = 20;
     const BLOCK_SIZE = 24;
-    const LINES_TO_WIN = 5; // ** CHANGED: Win condition is now 5 lines **
+    const LINES_TO_WIN = 5; 
     const GAME_TIME_LIMIT = 600; 
     const QUESTION_TIME_LIMIT = 10; 
     
+    // ** BUG FIX: Changed 'O' piece color from black to scarlet **
     const COLORS = [
-        null, '#D00000', '#000000', '#FDF2D9', '#4d4f53', '#FFFFFF', '#D00000', '#FDF2D9'  
+        null, 
+        '#D00000', // 1: I (Scarlet)
+        '#D00000', // 2: O (WAS BLACK, NOW SCARLET)
+        '#FDF2D9', // 3: S (Cream)
+        '#4d4f53', // 4: Z (Husker Steel)
+        '#FFFFFF', // 5: T (White)
+        '#D00000', // 6: L (Scarlet)
+        '#FDF2D9'  // 7: J (Cream)
     ];
     
     const SHAPES = [
@@ -50,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         [[7,0,0],[7,7,7],[0,0,0]]  // J
     ];
 
-    // --- Question Bank (Truncated for brevity) ---
+    // --- Question Bank (Truncated) ---
     const questionBank = [
         { question: "How many touchdowns did running back Emmett Johnson score against Northwestern?", options: ["One", "Two", "Three", "Zero"], correctAnswer: 1 },
         { question: "Against Northwestern, what was Kenneth Williams' second-half kickoff return?", options: ["A 50-yard gain", "A tackle at the 20", "A 95-yard touchdown", "A fumble"], correctAnswer: 2 },
@@ -59,18 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { question: "What season-ending injury did quarterback Dylan Raiola suffer?", options: ["Torn ACL", "Broken Collarbone", "Concussion", "Broken Fibula"], correctAnswer: 3 },
         { question: "Who took over at quarterback for Nebraska after Dylan Raiola's injury?", options: ["Chubba Purdy", "TJ Lateef", "Heinrich Haarberg", "Jeff Sims"], correctAnswer: 1 },
         { question: "Against USC, how many sacks did the Husker pass rush record?", options: ["Zero", "One", "Two", "Three"], correctAnswer: 3 },
-        { question: "USC's 21 points against Nebraska was a season ____ for their offense.", options: ["High", "Average", "Low", "Record"], correctAnswer: 2 },
-        { question: "Head Coach Matt Rhule received a contract extension through which season?", options: ["2028", "2030", "2032", "2035"], correctAnswer: 2 },
-        { question: "What is the new buyout amount in Matt Rhule's contract extension?", options: ["$5 million", "$10 million", "$15 million", "$20 million"], correctAnswer: 2 },
     ];
 
     // --- Game State Variables ---
     let board, score, lines, isGameOver, currentPiece, gameInterval, gameTimer, questionTimer, gameTimeRemaining, isGameTimerRunning, quizStartTime;
-    
-    // ** NEW: Quiz cadence state **
-    let nextPiece;
-    let blocksPlacedSinceQuiz;
-    let quizTriggerCount; // How many blocks to place before next quiz
+    let nextPiece, blocksPlacedSinceQuiz, quizTriggerCount;
 
     // --- Game Logic Functions ---
     
@@ -83,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         draw() { 
+            // ** BUG FIX: Explicitly set alpha to 1.0 for the active piece **
+            context.globalAlpha = 1.0; 
             context.fillStyle = this.color; 
             context.strokeStyle = '#000';
             this.shape.forEach((row, y) => { 
@@ -103,14 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameTimerRunning = false; 
         board = Array.from({ length: ROWS }, () => Array(COLS).fill(0)); 
         gameTimerElement.textContent = "10:00"; 
-        currentPiece = null; // Game starts with no piece
-        
-        // ** NEW: Set up quiz cadence and next piece **
+        currentPiece = null; 
         blocksPlacedSinceQuiz = 0;
-        quizTriggerCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
+        quizTriggerCount = Math.floor(Math.random() * 2) + 3; 
         nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]);
         drawNextPiece();
-        
         updateUI(); 
         clearInterval(gameInterval); 
         clearInterval(gameTimer); 
@@ -129,11 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000); 
     }
     
-    // ** UPDATED: Play logic now uses the nextPiece system **
     function play() { 
-        currentPiece = nextPiece; // The next piece becomes current
-        nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]); // Get a new next piece
-        drawNextPiece(); // Update the preview box
+        currentPiece = nextPiece; 
+        nextPiece = new Piece(SHAPES[Math.floor(Math.random() * (SHAPES.length - 1)) + 1]); 
+        drawNextPiece(); 
         gameInterval = setInterval(gameLoop, 500); 
     }
     
@@ -141,9 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
         movePiece('down'); 
     }
     
-    // ** UPDATED: Show quiz now resets quiz cadence **
     function showQuiz() { 
-        clearInterval(gameInterval); // Pause the game
+        clearInterval(gameInterval); 
         const q = questionBank[Math.floor(Math.random() * questionBank.length)]; 
         questionText.textContent = q.question; 
         answerOptions.innerHTML = ''; 
@@ -168,12 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (timeRemaining <= 0) checkAnswer(false, "You ran out of time!");
         }, 50);
         
-        // ** NEW: Reset quiz counter for the *next* round **
         blocksPlacedSinceQuiz = 0;
-        quizTriggerCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
+        quizTriggerCount = Math.floor(Math.random() * 2) + 3; 
     }
     
-    // ** UPDATED: Check answer logic is now simpler **
     function checkAnswer(isCorrect, message = "Incorrect answer!") { 
         clearInterval(questionTimer); 
         quizModal.classList.add('hidden'); 
@@ -184,18 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGameTimer(); 
                 isGameTimerRunning = true; 
             }
-            
             if (!currentPiece) {
-                play(); // This is the first piece of the game
+                play(); 
             } else {
-                gameInterval = setInterval(gameLoop, 500); // Resume the paused piece
+                gameInterval = setInterval(gameLoop, 500); 
             }
         } else { 
             gameOver(message); 
         } 
     }
     
-    // ** UPDATED: Move piece now handles quiz cadence logic **
     function movePiece(direction) { 
         if (isGameOver) return; 
         let { x, y, shape } = currentPiece; 
@@ -221,14 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (direction === 'down') { 
             lockPiece(); 
             clearLines(); 
-            
-            if (isGameOver) return; // Stop if game was won
-
-            // ** NEW: Check if it's time for a quiz **
+            if (isGameOver) return;
             if (blocksPlacedSinceQuiz >= quizTriggerCount) {
                 showQuiz();
             } else {
-                play(); // No quiz, just start the next piece
+                play();
             }
         } 
         draw(); 
@@ -261,7 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
     
-    // ** UPDATED: Lock piece now increments the quiz counter **
     function lockPiece() { 
         clearInterval(gameInterval); 
         currentPiece.shape.forEach((row, y) => { 
@@ -277,12 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
             }); 
         });
-        
-        // ** NEW: Count this piece toward the next quiz **
         blocksPlacedSinceQuiz++;
     }
     
-    // ** UPDATED: Win condition is now 5 lines **
     function clearLines() { 
         let linesCleared = 0; 
         for (let y = ROWS - 1; y >= 0; y--) { 
@@ -312,15 +297,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500); 
     }
     
-    // ** UPDATED: Main draw function now calls ghost piece **
     function draw() { 
         context.clearRect(0, 0, canvas.width, canvas.height); 
         drawBoard(); 
-        drawGhostPiece(); // ** NEW: Draw the shadow **
+        drawGhostPiece(); 
         if(currentPiece) currentPiece.draw(); 
     }
     
     function drawBoard() { 
+        // ** BUG FIX: Explicitly set alpha to 1.0 for the board **
+        context.globalAlpha = 1.0;
         board.forEach((row, y) => { 
             row.forEach((value, x) => { 
                 if (value > 0) { 
@@ -333,23 +319,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }); 
     }
 
-    // ** NEW: Function to draw the "Next Piece" preview **
     function drawNextPiece() {
         nextContext.clearRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
         if (!nextPiece) return;
-
         const shape = nextPiece.shape;
         const color = nextPiece.color;
-        const size = BLOCK_SIZE * 0.8; // Make it a bit smaller for the box
-        
-        // Calculate offset to center the piece
+        const size = BLOCK_SIZE * 0.8; 
         const shapeWidth = (shape[0] ? shape[0].length : 0) * size;
         const shapeHeight = shape.length * size;
         const startX = (nextPieceCanvas.width - shapeWidth) / 2;
         const startY = (nextPieceCanvas.height - shapeHeight) / 2;
 
         nextContext.fillStyle = color;
-        nextContext.strokeStyle = '#3f3f46'; // Use border color
+        nextContext.strokeStyle = '#3f3f46';
         shape.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value > 0) {
@@ -360,17 +342,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ** NEW: Function to draw the "Ghost Piece" shadow **
     function drawGhostPiece() {
         if (!currentPiece) return;
         
         let ghostY = currentPiece.y;
-        // Move the ghost piece down until it collides
         while (!collision(currentPiece.x, ghostY + 1, currentPiece.shape)) {
             ghostY++;
         }
 
-        // Now draw the piece at (currentPiece.x, ghostY) with transparency
         context.globalAlpha = 0.3; // Set transparency
         context.fillStyle = currentPiece.color;
         currentPiece.shape.forEach((row, y) => {
@@ -380,7 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-        context.globalAlpha = 1.0; // Reset transparency
+        // ** BUG FIX: Reset alpha immediately after use **
+        context.globalAlpha = 1.0; 
     }
     
     function updateUI() { 
@@ -422,8 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             score += rowsDropped; 
             updateUI();
-            
-            // Manually trigger the "down" collision logic
             movePiece('down');
         }
     });
@@ -448,6 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Initial Game State ---
-    console.log("Husker News Tetris initialized successfully (v6). Ready to play!");
+    console.log("Husker News Tetris initialized successfully (v7). Ready to play!");
     resetGame(); 
 });
+
