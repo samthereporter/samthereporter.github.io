@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNL Temple Building: Then & Now</title>
+    <style>
+        /* Basic page styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* The main comparison container */
+        .comparison-container {
+            position: relative; /* Establishes a positioning context for children */
+            width: 90vw;
+            max-width: 900px;
+            overflow: hidden; /* Clips the images */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            
+            /* Set aspect ratio based on the original image to prevent layout shift */
+            /* You might need to adjust this if your images have a different ratio */
+            aspect-ratio: 1000 / 646; 
+        }
+
+        /* Container for the "top" image (modern photo) */
+        .image-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%; /* Initial position - 50% visible */
+            overflow: hidden; /* The magic: clips the image inside */
+            z-index: 2;
+        }
+
+        /* Container for the "bottom" image (historical photo) */
+        .image-bottom {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Styling for BOTH images */
+        .comparison-container img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            
+            /* * 'object-fit: cover' forces the image to fill the container,
+             * cropping if necessary. This is key to making sure both
+             * images align, even if their aspect ratios are slightly different.
+            */
+            object-fit: cover;
+            object-position: center; 
+            
+            /* Prevents users from dragging the image itself */
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* The slider handle (the vertical line) */
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%; /* Initial position */
+            width: 4px;
+            background-color: rgba(255, 255, 255, 0.9);
+            cursor: ew-resize; /* East-West resize cursor */
+            z-index: 3;
+            
+            /* Center the 4px line on the 50% mark */
+            transform: translateX(-50%); 
+        }
+
+        /* The circular grabber icon on the handle */
+        .slider-handle::after {
+            content: 'leftrightarrows';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>UNL Temple Building</h1>
+    <p>1920-1930 vs. 2025</p>
+
+    <div class="comparison-container" id="comparison-container">
+        
+        <div class="image-bottom">
+            <img src="58.jpg" alt="Temple Building 1920-1930">
+        </div>
+        
+        <div class="image-top" id="image-top">
+            <img src="IMG_6357.jpg" alt="Temple Building 2025">
+        </div>
+        
+        <div class="slider-handle" id="slider-handle"></div>
+
+    </div>
+
+    <script>
+        // Get references to the HTML elements
+        const container = document.getElementById('comparison-container');
+        const topImageContainer = document.getElementById('image-top');
+        const sliderHandle = document.getElementById('slider-handle');
+
+        let isDragging = false;
+
+        // --- Mouse Events ---
+
+        // Start dragging
+        sliderHandle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            // Prevent text selection during drag
+            e.preventDefault(); 
+        });
+
+        // Stop dragging
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Handle dragging
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) {
+                return; // Do nothing if not dragging
+            }
+            
+            // Get the position of the mouse relative to the container
+            let rect = container.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+
+            // Constrain the slider to stay within the container
+            if (x < 0) x = 0;
+            if (x > rect.width) x = rect.width;
+
+            // Calculate the percentage
+            let percent = (x / rect.width) * 100;
+
+            // Update the CSS
+            sliderHandle.style.left = percent + '%';
+            topImageContainer.style.width = percent + '%';
+        });
+
+
+        // --- Touch Events (for Mobile) ---
+
+        // Start dragging
+        sliderHandle.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            // Prevent screen scrolling
+            e.preventDefault(); 
+        });
+
+        // Stop dragging
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Handle dragging
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) {
+                return; // Do nothing if not dragging
+            }
+
+            let rect = container.getBoundingClientRect();
+            // Get the position of the *first* touch
+            let x = e.touches[0].clientX - rect.left;
+
+            // Constrain the slider
+            if (x < 0) x = 0;
+            if (x > rect.width) x = rect.width;
+
+            // Calculate the percentage
+            let percent = (x / rect.width) * 100;
+
+            // Update the CSS
+            sliderHandle.style.left = percent + '%';
+            topImageContainer.style.width = percent + '%';
+        });
+
+    </script>
+
+</body>
+</html>
