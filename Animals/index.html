@@ -199,12 +199,44 @@
             </div>
         );
 
+        const Footer = () => (
+            <footer className="bg-white mt-20 border-t border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div className="text-left">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Data Source</h3>
+                            <p className="text-gray-600 mb-4">
+                                Data based on surrender intake reports from the <span className="font-semibold text-blue-600">Lincoln Humane Society</span> (Oct '24 - Feb '25).
+                            </p>
+                            <div className="text-sm text-gray-500 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <p className="font-bold text-gray-800 uppercase tracking-wide text-xs mb-2">Surrender Location</p>
+                                <p className="font-semibold">Capital Humane Society</p>
+                                <p>Admissions & Assessment Center</p>
+                                <p>2320 Park Blvd, Lincoln, NE 68502</p>
+                            </div>
+                        </div>
+                        <div className="h-72 w-full rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                            <iframe 
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3008.304567234673!2d-96.71350692415513!3d40.79374497138125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8796be432f90769b%3A0xc3f8e6e8e8e8e8e8!2s2320%20Park%20Blvd%2C%20Lincoln%2C%20NE%2068502!5e0!3m2!1sen!2sus!4v1709664000000!5m2!1sen!2sus" 
+                                width="100%" 
+                                height="100%" 
+                                style={{border:0}} 
+                                allowFullScreen="" 
+                                loading="lazy" 
+                                referrerPolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        );
+
         const App = () => {
             return (
-                <div className="min-h-screen pb-20">
+                <div className="min-h-screen pb-0">
                     <Header />
                     
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                             
                             <SurrenderCard 
@@ -242,9 +274,7 @@
                         </div>
                     </main>
 
-                    <footer className="mt-20 text-center text-gray-400 pb-8 text-sm">
-                        <p>Data based on surrender intake reports from the Lincoln Humane Society (Oct '24 - Feb '25).</p>
-                    </footer>
+                    <Footer />
                 </div>
             );
         };
