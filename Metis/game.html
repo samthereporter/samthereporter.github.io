@@ -5,262 +5,381 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulation</title>
     <style>
-        /* BASE STYLES - STARK & COLD */
+        /* RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background-color: #f0f2f5;
+            background-color: #000;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling */
             font-family: 'Georgia', serif;
-            color: #2c3e50;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
         }
 
-        /* MAIN GAME CONTAINER */
-        .game-container {
-            background: white;
-            width: 90%;
-            max-width: 700px;
-            padding: 40px;
-            border: 1px solid #d1d9e6;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-radius: 4px;
+        /* --- LAYERS --- */
+
+        /* LAYER 1: BACKGROUND */
+        #bg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('school.jpg'); /* Initial Background */
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+             transition: background-image 0.5s ease-in-out;
         }
 
-        /* STATS BAR */
+        /* LAYER 2: STATS BAR (Floating at top) */
         .stats-bar {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
             display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            gap: 20px;
+            z-index: 10;
             font-family: sans-serif;
-            font-size: 0.85rem;
-            color: #555;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        .stat-value { font-weight: bold; color: #FFD700; }
 
-        .stat-value {
-            font-weight: bold;
-            color: #2c3e50;
+        /* LAYER 3: DIALOGUE BOX CONTAINER */
+        #dialogue-container {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            height: 35vh; /* Height of the bottom visual novel section */
+            z-index: 5;
+            pointer-events: none; /* Lets clicks pass through to body for advancement */
         }
 
-        /* NARRATIVE TEXT */
-        .story-text {
-            font-size: 1.15rem;
-            line-height: 1.7;
-            margin-bottom: 30px;
-            min-height: 150px;
+        /* LAYER 4: CHARACTER SILHOUETTE */
+        #character-sprite {
+            position: absolute;
+            bottom: 0; /* Align bottom of image with bottom of screen */
+            left: 5%; /* Offset from left */
+            height: 80vh; /* Make character large */
+            width: auto;
+            z-index: 6; /* Sits ON TOP of the dialogue box background */
+            pointer-events: none;
+             /* Drop shadow to make silhouette pop */
+            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.5));
         }
 
-        /* CHOICES */
-        .choices-container {
+        /* LAYER 5: ACTUAL TEXT BOX */
+        .text-box-bg {
+            position: absolute;
+            bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 25vh;
+            background: rgba(0, 0, 0, 0.85); /* Dark semi-transparent background */
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 30px 40px 30px 250px; /* Large left padding to make room for character */
+            color: #fff;
+            z-index: 4; /* Behind character */
             display: flex;
             flex-direction: column;
-            gap: 12px;
+        }
+
+        /* NARRATIVE TYPEWRITER TEXT */
+        #story-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            white-space: pre-wrap; /* Preserve line breaks */
+        }
+
+        /* CLICK TO CONTINUE PROMPT */
+        .continue-prompt {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #aaa;
+            animation: blink 1.5s infinite;
+            margin-top: 10px;
+            visibility: hidden; /* Hidden while typing */
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* CHOICES AREA (Hidden during intro) */
+        #choices-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); /* Darken whole screen for choices */
+            z-index: 20; /* Highest priority */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .choice-btn {
-            background-color: transparent;
-            border: 1px solid #2c3e50;
+            background-color: #f0f2f5;
+            border: 2px solid #2c3e50;
             color: #2c3e50;
-            padding: 15px 20px;
-            text-align: left;
-            font-size: 1rem;
+            padding: 20px 40px;
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.2s;
             font-family: sans-serif;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            border-radius: 8px;
+            pointer-events: auto; /* Re-enable clicks for buttons */
         }
 
         .choice-btn:hover {
             background-color: #2c3e50;
             color: white;
-        }
-
-        /* RESTART BUTTON (Hidden by default) */
-        .restart-btn {
-            margin-top: 20px;
-            text-align: center;
-            display: none;
-            color: #888;
-            cursor: pointer;
-            text-decoration: underline;
+            transform: scale(1.02);
         }
 
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <div class="stats-bar">
-            <span>Hunger: <span id="hunger-stat" class="stat-value">50%</span></span>
-            <span>Warmth: <span id="warmth-stat" class="stat-value">100%</span></span>
-            <span>Spirit: <span id="spirit-stat" class="stat-value">100%</span></span>
-        </div>
+    <div id="bg-layer"></div>
 
-        <div id="story-text" class="story-text">
-            Loading...
-        </div>
-
-        <div id="choices" class="choices-container">
-            </div>
-
-        <div id="restart" class="restart-btn" onclick="startGame()">Restart Simulation</div>
+    <div class="stats-bar" id="statsBar" style="display:none;"> <span>Hunger: <span id="hunger-stat" class="stat-value">50%</span></span>
+        <span>Warmth: <span id="warmth-stat" class="stat-value">100%</span></span>
+        <span>Spirit: <span id="spirit-stat" class="stat-value">100%</span></span>
     </div>
 
+    <div id="dialogue-container">
+        <img id="character-sprite" src="" alt="Character">
+        
+        <div class="text-box-bg">
+            <div id="story-text"></div>
+            <div id="continuePrompt" class="continue-prompt">Click or Press Space to continue ▼</div>
+        </div>
+    </div>
+
+    <div id="choices-overlay">
+        <h2 style="color:white; margin-bottom: 30px;" id="choice-prompt-text">Make a choice</h2>
+        <div id="choices-container" style="display:flex; flex-direction:column; gap:20px; width: 100%; align-items: center;">
+            </div>
+    </div>
+
+
     <script>
-        // --- GAME STATE ---
+        // --- GAME STATE & CONFIG ---
         let state = {
-            hunger: 50, // Starts at 50 because poverty/food scarcity was common 
+            hunger: 50, 
             warmth: 100,
             spirit: 100,
-            name: localStorage.getItem('playerName') || "Student"
+            name: localStorage.getItem('playerName') || "Student",
+            gender: localStorage.getItem('playerGender') || "other",
+            introIndex: 0, // Tracks progress through intro sequence
+            isTyping: false, // Is the typewriter currently active?
+            inIntro: true // Are we in the intro phase or main game phase?
         };
 
-        // --- THE STORY DATA (EDIT THIS SECTION) ---
-        // Format: "scene_id": { text: "...", choices: [...] }
-        const storyData = {
+        // Typewriter settings
+        const typeSpeed = 30; // milliseconds per character
+        let typeTimeouts = []; // Array to hold timeouts so we can clear them if skipped
+
+        // --- ASSET SETUP ---
+        // Set character image based on gender selection
+        const charImgElement = document.getElementById('character-sprite');
+        if (state.gender === 'female') {
+            charImgElement.src = 'girl_silhouette.png';
+        } else {
+             // Default to boy for male or 'other'
+            charImgElement.src = 'boy_silhouette.png';
+        }
+
+
+        // --- INTRODUCTORY SEQUENCE DATA ---
+        // An array of strings to play sequentially before the game starts.
+        const introSequence = [
+            "The year is 1970. You, as an Indigenous person belonging to the Métis tribe, are attending Île-à-la-Crosse Residential School.",
             
-            // SCENE 1: THE ROAD ALLOWANCE
+            // Historical Context Slide
+            "Following the resistances of 1869 and 1885, the government often viewed the Métis as rebellious squatters. By the turn of the 20th century, federal officials created \"classes\" of Métis to guide admission to schools like this one. \n\nThose considered to be living the \"Indian mode of life,\" or deemed \"illegitimate,\" were the most likely to be institutionalized. School officials often manipulated these classes not for education, but to increase funding per student under the guise of civilization.",
+            
+            // Instructions Slide (surrounded by parentheses as requested)
+            "(You will now begin your day. You must navigate the challenges of life at the school by carefully managing your three vital stats: Hunger, Warmth, and Spirit. Your choices will determine how these fluctuate. Pay close attention, as letting them drop too low will have consequences.)"
+        ];
+
+
+        // --- THE MAIN STORY DATA (The actual game branches) ---
+        const storyData = {
+            // THE FINAL CONFIRMATION BEFORE GAME STARTS
+            "ready_check": {
+                text: "[Name], are you ready to begin your journey?",
+                promptLabel: "Are you ready?",
+                choices: [
+                    { text: "Yes", nextScene: "start" },
+                    { text: "No", action: "exitGame" }
+                ]
+            },
+
+            // SCENE 1: THE ROAD ALLOWANCE (The game begins here after "Yes")
             "start": {
-                text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters"[cite: 396]. <br><br>The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush[cite: 400], and if you are late, the doors might be locked.`,
+                bg: "home_interior.jpg", // Example of changing BG (you need this image)
+                text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters". <br><br>The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush, and if you are late, the doors might be locked.`,
+                promptLabel: "What do you do?",
                 choices: [
                     {
                         text: "Leave immediately to avoid being locked out.",
                         nextScene: "the_walk_rushed",
                         effects: { hunger: 10, warmth: 0, spirit: 0 } 
-                        // Effect: Hunger increases (+10) because you skipped breakfast.
                     },
                     {
                         text: "Stay to eat some bannock, risking lateness.",
                         nextScene: "the_walk_fed",
                         effects: { hunger: -20, warmth: 0, spirit: 5 }
-                        // Effect: Hunger goes down (-20), Spirit goes up (+5) from family time.
                     },
                     {
                         text: "Speak to your grandmother in Michif before you go.",
                         nextScene: "grandmother_talk",
                         effects: { hunger: 5, warmth: 0, spirit: 15 }
-                        // Effect: Spirit goes up significantly (+15), reinforcing culture.
                     }
                 ]
             },
-
-            // SCENE 2A: RUSHED WALK
-            "the_walk_rushed": {
-                text: `You step out into the winter dark. You are hungry, but fear pushes you forward. You have to walk three or four miles through the bush[cite: 400]. <br><br>The wind cuts through your coat. You can see the lights of the residential school in the distance. It looks like a fortress.`,
-                choices: [
-                    {
-                        text: "Run to generate body heat.",
-                        nextScene: "arrival_early",
-                        effects: { hunger: 10, warmth: -10, spirit: 0 }
-                    },
-                    {
-                        text: "Walk carefully to save energy.",
-                        nextScene: "arrival_ontime",
-                        effects: { hunger: 5, warmth: -30, spirit: 0 }
-                    }
-                ]
-            },
-
-            // SCENE 2B: FED WALK
-            "the_walk_fed": {
-                text: `The bannock sits heavy in your stomach, a rare comfort. But the sun is already rising higher. You are behind schedule. <br><br>You walk fast, your boots crunching on the snow. You worry about the "extern" door. Sometimes they lock it right at the bell, leaving children outside in the cold[cite: 400].`,
-                choices: [
-                    {
-                        text: "Take a shortcut across the frozen lake (Dangerous).",
-                        nextScene: "arrival_ontime",
-                        effects: { hunger: 5, warmth: -20, spirit: 0 }
-                    },
-                    {
-                        text: "Stick to the road (Safer but slower).",
-                        nextScene: "arrival_late",
-                        effects: { hunger: 5, warmth: -20, spirit: 0 }
-                    }
-                ]
-            },
-
-            // SCENE 2C: GRANDMOTHER TALK
-            "grandmother_talk": {
-                text: `Your grandmother touches your cheek. She whispers to you in Michif. It feels warm, like a secret fire. <br><br>But you know the rules. At the school, speaking this language is forbidden[cite: 70]. The punishment is severe. As you leave the house, you have to push the words deep down inside you so they don't slip out.`,
-                choices: [
-                    {
-                        text: "Start the long walk to school.",
-                        nextScene: "arrival_ontime",
-                        effects: { hunger: 10, warmth: -20, spirit: 0 }
-                    }
-                ]
-            },
-
-            // SCENE 3: ARRIVAL (Placeholder for you to write)
-            "arrival_ontime": {
-                text: `You arrive just as the bell rings. The "Boarders" (resident students) are already inside, lined up. <br><br>You are an "Extern." You must wait by the side entrance. You can smell the breakfast from the dining hall, but you are not allowed in[cite: 401].`,
-                choices: [
-                    {
-                        text: "Wait quietly in the line.",
-                        nextScene: "start", // LOOP BACK FOR DEMO PURPOSES
-                        effects: { hunger: 5, warmth: -10, spirit: -5 }
-                    }
-                ]
-            },
-
-            "arrival_late": {
-                 text: `You pull on the handle. Locked. <br><br>You are too late. The nuns have locked the extern door. You have to knock and wait, shivering, hoping someone will let you in before you freeze. This is a common punishment for the day scholars[cite: 400].`,
-                 choices: [
-                    {
-                        text: "Knock loudly.",
-                        nextScene: "start", // LOOP BACK FOR DEMO PURPOSES
-                        effects: { hunger: 5, warmth: -20, spirit: -10 }
-                    }
-                 ]
-            }
+             // Placeholder for continuity
+            "the_walk_rushed": { text: "Placeholder scene...", choices: []},
+            "the_walk_fed": { text: "Placeholder scene...", choices: []},
+            "grandmother_talk": { text: "Placeholder scene...", choices: []}
         };
 
-        // --- ENGINE FUNCTIONS (DO NOT TOUCH UNLESS YOU KNOW JS) ---
-        function startGame() {
-            // Reset Stats
-            state.hunger = 50;
-            state.warmth = 100;
-            state.spirit = 100;
-            updateStatsUI();
-            
-            // Load first scene
-            showScene("start");
-            
-            // Hide restart button
-            document.getElementById('restart').style.display = 'none';
+
+        // --- ENGINE FUNCTIONS ---
+
+        // 1. The Typewriter Effect
+        function typeWriter(text, elementId, callback) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = ""; // Clear existing text
+            state.isTyping = true;
+            document.getElementById('continuePrompt').style.visibility = 'hidden'; // Hide prompt while typing
+
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    // Handle HTML tags (like <br>) instantly, don't type them out
+                    if (text.charAt(i) === '<') {
+                        let tag = '';
+                        while (text.charAt(i) !== '>' && i < text.length) {
+                            tag += text.charAt(i);
+                            i++;
+                        }
+                        tag += '>';
+                        i++;
+                        element.innerHTML += tag;
+                    } else {
+                        // Standard character
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                    }
+                    typeTimeouts.push(setTimeout(type, typeSpeed));
+                } else {
+                    // Typing finished
+                    state.isTyping = false;
+                    document.getElementById('continuePrompt').style.visibility = 'visible';
+                    if (callback) callback();
+                }
+            }
+            type();
         }
 
-        function showScene(sceneId) {
-            const scene = storyData[sceneId];
-            if (!scene) {
-                document.getElementById('story-text').innerHTML = "Error: Scene not found.";
+        // Function to stop typing instantly (if needed later for skipping)
+        function clearTypewriter() {
+            typeTimeouts.forEach(timeout => clearTimeout(timeout));
+            typeTimeouts = [];
+            state.isTyping = false;
+            document.getElementById('continuePrompt').style.visibility = 'visible';
+        }
+
+
+        // 2. Intro Sequence Handler
+        function playIntroNext() {
+            // Hide choices overlay if it's open
+             document.getElementById('choices-overlay').style.display = 'none';
+
+            if (state.isTyping) {
+                // If user clicks while typing, instantly finish the text (skipping)
+                clearTypewriter();
+                document.getElementById('story-text').innerHTML = introSequence[state.introIndex];
                 return;
             }
 
-            // Update Text
-            // We replace [Name] with the player's stored name if you want to use it
+            state.introIndex++;
+
+            if (state.introIndex < introSequence.length) {
+                // Play next intro slide
+                typeWriter(introSequence[state.introIndex], 'story-text');
+            } else {
+                // Intro finished, trigger the "Ready Check"
+                state.inIntro = false;
+                showScene("ready_check");
+            }
+        }
+
+
+        // 3. Main Scene Display Function
+        function showScene(sceneId) {
+            const scene = storyData[sceneId];
+            if (!scene) return alert("Error: Scene not found: " + sceneId);
+
+            // Replace [Name] placeholder
             let processedText = scene.text.replace("[Name]", state.name);
-            document.getElementById('story-text').innerHTML = processedText;
 
-            // Clear old choices
-            const choicesDiv = document.getElementById('choices');
-            choicesDiv.innerHTML = '';
+            // Change Background if specified in the scene data
+            if (scene.bg) {
+                 document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
+            }
 
-            // Create new buttons
+            // Start typing the narrative
+            typeWriter(processedText, 'story-text', () => {
+                // Once typing ends, show choices overlay
+                presentChoices(scene);
+            });
+        }
+
+        // 4. Show Choices Overlay
+        function presentChoices(scene) {
+            const overlay = document.getElementById('choices-overlay');
+            const choices container = document.getElementById('choices-container');
+            const promptLabel = document.getElementById('choice-prompt-text');
+            
+            container.innerHTML = ''; // Clear old buttons
+            promptLabel.innerText = scene.promptLabel || "Make a choice";
+
             scene.choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.innerText = choice.text;
-                btn.onclick = () => makeChoice(choice);
-                choicesDiv.appendChild(btn);
+                
+                // Handle button click depending on action type
+                if (choice.action === "exitGame") {
+                     btn.onclick = () => window.location.href = 'index.html';
+                } else {
+                     btn.onclick = () => makeChoice(choice);
+                }
+                
+                container.appendChild(btn);
             });
+            
+            // Show the overlay
+            overlay.style.display = 'flex';
         }
 
+
+        // 5. Handle Choice Selection
         function makeChoice(choice) {
-            // 1. Apply Effects
+            document.getElementById('choices-overlay').style.display = 'none'; // Hide overlay
+
+            // If this is the very first choice ("Yes, I'm ready"), show the stats bar
+            if (state.inIntro === false && document.getElementById('statsBar').style.display === 'none') {
+                 document.getElementById('statsBar').style.display = 'flex';
+            }
+
+            // Apply Effects based on research mechanics
             if (choice.effects) {
                 state.hunger += (choice.effects.hunger || 0);
                 state.warmth += (choice.effects.warmth || 0);
@@ -270,22 +389,13 @@
                 state.hunger = Math.max(0, Math.min(100, state.hunger));
                 state.warmth = Math.max(0, Math.min(100, state.warmth));
                 state.spirit = Math.max(0, Math.min(100, state.spirit));
-                
                 updateStatsUI();
             }
 
-            // 2. Check for "Game Over" or Special Conditions
-            // Example: If warmth hits 0, you freeze.
-            if (state.warmth <= 0) {
-                document.getElementById('story-text').innerHTML = "The cold is too much. You collapse in the snow before reaching the school doors. (Game Over)";
-                document.getElementById('choices').innerHTML = '';
-                document.getElementById('restart').style.display = 'block';
-                return;
-            }
-
-            // 3. Move to next scene
+            // Move to next scene
             showScene(choice.nextScene);
         }
+
 
         function updateStatsUI() {
             document.getElementById('hunger-stat').innerText = state.hunger + "%";
@@ -293,8 +403,27 @@
             document.getElementById('spirit-stat').innerText = state.spirit + "%";
         }
 
-        // Initialize
-        startGame();
+
+        // --- INPUT HANDLING (GLOBAL) ---
+        // Handles clicking anywhere or pressing space to advance intro text
+        function advanceGlobal(e) {
+            // Only run this during the intro sequence phase
+            if (!state.inIntro) return;
+
+            // Don't trigger if clicking a choice button (though overlay should block this)
+            if (e.target.tagName === 'BUTTON') return; 
+
+            if (e.type === 'click' || (e.type === 'keydown' && e.code === 'Space')) {
+                 playIntroNext();
+            }
+        }
+
+        document.body.addEventListener('click', advanceGlobal);
+        document.body.addEventListener('keydown', advanceGlobal);
+
+        // --- INITIALIZE ---
+        // Start the first intro slide immediately
+        typeWriter(introSequence[0], 'story-text');
 
     </script>
 </body>
