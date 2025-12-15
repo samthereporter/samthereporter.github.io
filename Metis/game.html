@@ -53,49 +53,70 @@
         #dialogue-container {
             position: absolute;
             bottom: 0; left: 0; width: 100%;
-            height: 100vh; /* Full height to allow positioning */
+            height: 100vh; 
             z-index: 5;
             pointer-events: none; 
         }
 
-        /* LAYER 4: CHARACTER SILHOUETTE (Behind Text Box) */
+        /* LAYER 4: CHARACTER SILHOUETTE */
         #character-sprite {
             position: absolute;
             bottom: 0; 
             left: 5%; 
             height: 85vh; 
             width: auto;
-            z-index: 5; /* LOWER than text box */
+            z-index: 5; /* Behind text box */
             pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
             opacity: 0.95;
         }
 
-        /* LAYER 5: TEXT BOX (On Top of Character) */
+        /* LAYER 5: TEXT BOX */
         .text-box-bg {
             position: absolute;
-            bottom: 20px; left: 50%;
+            bottom: 30px; /* Moved up slightly */
+            left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            height: 25vh;
-            /* High opacity background to make text readable over the character legs */
+            height: 30vh; /* INCREASED HEIGHT from 25vh to 30vh */
             background: rgba(0, 0, 0, 0.9); 
             border: 2px solid #555;
             border-radius: 10px;
-            /* FIXED: Removed the huge 250px left padding */
-            padding: 30px 40px; 
+            padding: 25px 35px; /* Slightly tighter padding */
             color: #fff;
-            z-index: 10; /* HIGHER than character */
+            z-index: 10; 
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
+        /* NARRATIVE TEXT - NOW SCROLLABLE */
         #story-text {
             font-size: 1.25rem;
             line-height: 1.6;
             flex-grow: 1;
             white-space: pre-wrap;
+            overflow-y: auto; /* ENABLE SCROLLING */
+            padding-right: 15px; /* Space for scrollbar */
+            
+            /* Custom Scrollbar Styling (Firefox) */
+            scrollbar-width: thin;
+            scrollbar-color: #555 transparent;
+        }
+
+        /* Custom Scrollbar Styling (Chrome/Safari) */
+        #story-text::-webkit-scrollbar { width: 8px; }
+        #story-text::-webkit-scrollbar-track { background: transparent; }
+        #story-text::-webkit-scrollbar-thumb { background-color: #555; border-radius: 4px; }
+
+        /* RESPONSIVE FONT SIZE FOR LAPTOPS */
+        @media (max-height: 800px) {
+            #story-text {
+                font-size: 1.1rem; /* Shrink font on shorter screens */
+            }
+            #character-sprite {
+                height: 80vh; /* Shrink character slightly so head doesn't get cut off */
+            }
         }
 
         .continue-prompt {
@@ -105,6 +126,7 @@
             animation: blink 1.5s infinite;
             margin-top: 10px;
             visibility: hidden; 
+            flex-shrink: 0; /* Ensures prompt never gets squished */
         }
         @keyframes blink { 50% { opacity: 0; } }
 
@@ -112,7 +134,7 @@
         #choices-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); 
+            background: rgba(0,0,0,0.92); /* Darker background */
             z-index: 20; 
             display: none; 
             justify-content: center;
