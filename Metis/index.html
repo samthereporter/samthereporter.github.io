@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Metis Residential Schools Simulation</title>
+    <style>
+        /* RESET & BASE STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* BRIGHT & FLAVORFUL: A sunny, welcoming background to contrast the dark content */
+            background-color: #FDF6E3; /* Warm cream/yellow tone */
+            background-image: radial-gradient(#FFD700 10%, transparent 11%), radial-gradient(#FFD700 10%, transparent 11%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            font-family: 'Georgia', serif; /* Slightly academic/formal but readable */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            background: #FFFFFF;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Soft shadow for depth */
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 8px solid #2E8B57; /* "School Green" accent */
+        }
+
+        /* TYPOGRAPHY */
+        h1 {
+            color: #2E8B57;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .notice-box {
+            background-color: #E0F7FA;
+            border: 1px solid #B2EBF2;
+            color: #006064;
+            padding: 10px;
+            font-size: 0.85rem;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #444;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace; /* Typewriter feel for the input */
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #2E8B57;
+        }
+
+        /* THE SUBMIT BUTTON */
+        button {
+            background-color: #FF6B6B; /* Bright Coral/Red for action */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px; /* Pill shape */
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(255, 107, 107, 0.3);
+        }
+
+        button:hover {
+            background-color: #EE5253;
+            transform: translateY(-2px);
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="notice-box">
+            <strong>NOTICE:</strong> This simulation is for educational purposes only. It depicts historical events regarding the Métis experience in Residential Schools.
+        </div>
+
+        <h1>The Métis Residential<br>Schools Simulation</h1>
+        <p class="subtitle">Île-à-la-Crosse, Saskatchewan</p>
+
+        <form id="startForm">
+            <div class="form-group">
+                <label for="studentName">Student Name</label>
+                <input type="text" id="studentName" placeholder="Enter your full name" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="ethnicity">Select Ethnicity</label>
+                <select id="ethnicity" required>
+                    <option value="Metis">Métis</option>
+                </select>
+            </div>
+
+            <button type="submit">Begin Enrollment</button>
+        </form>
+
+        <div class="footer">
+            Based on historical records from the Île-à-la-Crosse Boarding School.
+        </div>
+    </div>
+
+    <script>
+        // Simple script to handle the start of the game
+        document.getElementById('startForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get the name
+            const name = document.getElementById('studentName').value;
+            
+            // Save name to LocalStorage so we can use it in the next page
+            localStorage.setItem('playerName', name);
+            
+            // For now, alert the user. 
+            // LATER: We will change this line to redirect to the actual game page (e.g., window.location.href = 'game.html')
+            alert("Welcome to the school, " + name + ". Your journey begins now.");
+        });
+    </script>
+
+</body>
+</html>
