@@ -30,20 +30,19 @@
             transition: opacity 1s ease-in-out;
         }
 
-        /* LAYER 2: STATS BAR (UPDATED: BIGGER) */
+        /* LAYER 2: STATS BAR */
         .stats-bar {
             position: absolute;
             top: 20px; right: 20px;
             background: rgba(0, 0, 0, 0.8);
             color: #fff;
-            /* INCREASED SIZE HERE */
             padding: 15px 30px;
             border-radius: 50px;
             display: flex;
-            gap: 30px; /* More space between stats */
+            gap: 30px; 
             z-index: 10;
             font-family: sans-serif;
-            font-size: 1.1rem; /* Larger Font */
+            font-size: 1.1rem; 
             text-transform: uppercase;
             letter-spacing: 1px;
             border: 2px solid #555;
@@ -51,10 +50,10 @@
         }
         .stat-value { font-weight: bold; color: #FFD700; }
 
-        /* NEW: STAT NOTIFICATION (Floating Message) */
+        /* STAT NOTIFICATION */
         #stat-notification {
             position: absolute;
-            top: 85px; /* Sits below the stats bar */
+            top: 85px; 
             right: 40px;
             text-align: right;
             font-family: sans-serif;
@@ -62,7 +61,7 @@
             font-size: 1rem;
             text-shadow: 1px 1px 3px #000;
             z-index: 15;
-            opacity: 0; /* Hidden by default */
+            opacity: 0; 
             transition: opacity 0.5s ease-in-out;
         }
 
@@ -72,7 +71,7 @@
             bottom: 0; left: 0; width: 100%;
             height: 100vh; 
             z-index: 5;
-            pointer-events: none; /* Ignore clicks on the empty air... */
+            pointer-events: none; 
         }
 
         /* LAYER 4: CHARACTER SILHOUETTE */
@@ -82,7 +81,7 @@
             left: 5%; 
             height: 85vh; 
             width: auto;
-            z-index: 5; /* Behind text box */
+            z-index: 5; 
             pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
             opacity: 0.95;
@@ -105,8 +104,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            
-            pointer-events: auto; /* Turn interactions back ON for the box */
+            pointer-events: auto; 
         }
 
         /* NARRATIVE TEXT - SCROLLABLE */
@@ -115,14 +113,12 @@
             line-height: 1.6;
             flex-grow: 1;
             white-space: pre-wrap;
-            overflow-y: auto; /* ENABLE SCROLLING */
+            overflow-y: auto; 
             padding-right: 15px; 
-            
-            /* Mac/iOS Smooth Scrolling */
             -webkit-overflow-scrolling: touch; 
         }
 
-        /* Custom Scrollbar Styling (Chrome/Safari) */
+        /* Custom Scrollbar Styling */
         #story-text::-webkit-scrollbar { width: 10px; }
         #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 5px; }
         #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 5px; border: 2px solid rgba(0,0,0,0.9); }
@@ -276,42 +272,71 @@
             },
 
             // --- SCENE 1 (ROAD ALLOWANCE) ---
-            
-            // PART 1: The Road Home
             "start_part1": {
-                bg: "images/road.JPG", // UPDATED TO ROAD IMAGE
+                bg: "images/road.JPG", 
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters".`,
                 nextScene: "start_part2" 
             },
 
-            // PART 2: The Choice
             "start_part2": {
-                bg: "images/road.JPG", // KEEP ROAD IMAGE
+                bg: "images/road.JPG", 
                 text: `The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush, and if you are late, the doors might be locked.`,
                 promptLabel: "What do you do?",
                 choices: [
+                    // All choices now merge into the "walk_intro" scene
                     {
                         text: "Leave immediately to avoid being locked out.",
-                        nextScene: "the_walk_rushed",
+                        nextScene: "walk_intro",
                         effects: { hunger: 10, warmth: 0, spirit: 0 } 
                     },
                     {
                         text: "Stay to eat some bannock, risking lateness.",
-                        nextScene: "the_walk_fed",
+                        nextScene: "walk_intro",
                         effects: { hunger: -20, warmth: 0, spirit: 5 }
                     },
                     {
                         text: "Speak to your grandmother in Michif before you go.",
-                        nextScene: "grandmother_talk",
+                        nextScene: "walk_intro",
                         effects: { hunger: 5, warmth: 0, spirit: 15 }
                     }
                 ]
             },
 
-            // Placeholders
-            "the_walk_rushed": { text: "Placeholder: You rush out into the cold...", choices: []},
-            "the_walk_fed": { text: "Placeholder: You eat quickly...", choices: []},
-            "grandmother_talk": { text: "Placeholder: You speak in Michif...", choices: []}
+            // --- SCENE 2: THE LONG WALK (NEW NARRATIVE) ---
+            
+            "walk_intro": {
+                bg: "images/road.JPG",
+                text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt the government calls a road allowance, the only place they let us be. Momma tried to make me look nice, but I know what those people think when they look at us. They see "squatters." They see "filth." I just see the only home I’ve ever known, tucked away in the bush where we tried to stay hidden.`,
+                nextScene: "walk_cold"
+            },
+
+            "walk_cold": {
+                bg: "images/road.JPG",
+                text: `Three miles. It feels longer when the wind cuts right through this coat. Momma fixed it up best she could but the noticeable holes in the fabric make it hard not to freeze.\n\nI keep my head down, watching my boots sink into the snow, trying to ignore the sting in my ears. I’m an "extern," that’s what they call us. Not a boarder, not fully part of the school, just someone walking in from the bush.`,
+                nextScene: "walk_identity"
+            },
+
+            "walk_identity": {
+                bg: "images/road.JPG",
+                text: `I listened to Dad argue with the Indian Agent. It’s always the same. We are too "white" for the Treaty benefits, but too "Indian" for the town schools. I am a problem they don't know how to solve, so they just shuffle me around.`,
+                nextScene: "walk_hope"
+            },
+
+            "walk_hope": {
+                bg: "images/road.JPG",
+                text: `Maybe this new school will be different?\n\nMaybe I can finally belong?`,
+                nextScene: "arrival_scene" // Placeholder for next scene
+            },
+
+            // --- SCENE 3: ARRIVAL (Placeholder) ---
+            "arrival_scene": {
+                bg: "images/school.jpg", // Switch back to school image
+                text: `(End of current demo content. The next scene will be the Arrival.)`,
+                promptLabel: "End of Demo",
+                choices: [
+                    { text: "Restart", action: "exitGame" }
+                ]
+            }
         };
 
         // --- ENGINE FUNCTIONS ---
@@ -420,23 +445,19 @@
             overlay.style.display = 'flex';
         }
 
-        // --- NEW: NOTIFICATION LOGIC ---
         function showNotification(changes) {
             let messages = [];
             
-            // HUNGER Logic (Increasing hunger is BAD)
             if (changes.hunger) {
                 if (changes.hunger > 0) messages.push(`<span style="color:#ff6b6b">Hunger increased by ${changes.hunger}%</span>`);
                 else messages.push(`<span style="color:#51cf66">Hunger reduced by ${Math.abs(changes.hunger)}%</span>`);
             }
             
-            // WARMTH Logic (Decreasing warmth is BAD)
             if (changes.warmth) {
                 if (changes.warmth < 0) messages.push(`<span style="color:#ff6b6b">Lost ${Math.abs(changes.warmth)}% Warmth</span>`);
                 else messages.push(`<span style="color:#51cf66">Gained ${changes.warmth}% Warmth</span>`);
             }
             
-            // SPIRIT Logic (Decreasing spirit is BAD)
             if (changes.spirit) {
                  if (changes.spirit < 0) messages.push(`<span style="color:#ff6b6b">Lost ${Math.abs(changes.spirit)}% Spirit</span>`);
                  else messages.push(`<span style="color:#51cf66">Gained ${changes.spirit}% Spirit</span>`);
@@ -447,7 +468,6 @@
                 note.innerHTML = messages.join("<br>");
                 note.style.opacity = 1;
                 
-                // Fade out after 3 seconds
                 setTimeout(() => {
                     note.style.opacity = 0;
                 }, 3000);
@@ -462,7 +482,6 @@
             }
 
             if (choice.effects) {
-                // Show notification BEFORE updating stats
                 showNotification(choice.effects);
 
                 state.hunger += (choice.effects.hunger || 0);
