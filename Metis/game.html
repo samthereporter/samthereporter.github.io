@@ -352,7 +352,7 @@
         charImgElement.src = playerImage;
 
         // Check required images including class.jpg
-        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.jpg', 'images/boy.png', 'images/girl.png', 'images/class.jpg'];
+        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.png', 'images/boy.png', 'images/girl.png', 'images/class.jpg'];
         requiredImages.forEach(src => {
             const img = new Image();
             img.src = src;
@@ -435,19 +435,19 @@
             },
             "school_entry": { 
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.jpg", 
+                characterImg: "images/nun.png", 
                 text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.", 
                 nextScene: "nun_dialogue_1"
             },
             "nun_dialogue_1": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet. You're lucky we let you in at all.`,
                 nextScene: "nun_dialogue_2"
             },
             "nun_dialogue_2": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
@@ -461,13 +461,13 @@
             },
             "scene_class_language": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `I heard speaking in the hallway earlier. I heard that... dialect. You know the rules. English is the language of this school. If I hear that 'Michif' or Cree gibberish again, you will be punished. Do not think because you are older now that the rules have changed. You will speak proper English, or you will not speak at all. Some of you seem determined to remain 'externs,' outsiders to civilization, no matter how hard we try to save you.`,
                 nextScene: "scene_class_yvonne"
             },
             "scene_class_yvonne": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `Let's hope we do not have another Yvonne incident... *she violently points to her ruler* young lady do you want to tell the new students what happened when you used your forbidden nonsense?`,
                 nextScene: "scene_class_silence"
             },
@@ -479,19 +479,19 @@
             },
             "scene_class_scrutiny": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `(She stands stiffly at the front of the room, her eyes scanning the students before landing on you. She notes the dust on your clothes from the road allowance.)`,
                 nextScene: "scene_class_posture"
             },
             "scene_class_posture": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `That's what I thought. We will be continuing our history lesson today. Sit up straight. You must learn to hold yourselves with dignity, not slouched over like you are sitting around a campfire. We are here to prepare you for the modern world, to make you useful citizens, not to encourage the savage ways your family taught you.`,
                 nextScene: "scene_class_history"
             },
             "scene_class_history": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: `Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here. It is only through the grace of God and the discipline of the Church that you are receiving an education at all. Your parents... well, they do not understand the value of what we are giving you here. If it were up to them, you would be running wild in the bush. *mutters to herself* for some of you maybe running off to your inevitable end.`,
                 effects: { spirit: -10, hunger: 5, warmth: 20 },
                 specialAction: "returnToMap"
@@ -514,7 +514,7 @@
             },
             "scene_work": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.jpg",
+                characterImg: "images/nun.png",
                 text: "[DYNAMIC_TEXT]", 
                 effects: { hunger: 20, spirit: -15, warmth: 0 },
                 nextScene: "end_of_day"
