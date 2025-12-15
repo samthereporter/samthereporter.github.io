@@ -155,19 +155,19 @@
     </div>
 
     <script>
-        // Simple script to handle the start of the game
+        // Updated Script to Handle Transition
         document.getElementById('startForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Stop the form from refreshing the page
             
-            // Get the name
+            // 1. Get the name from the input box
             const name = document.getElementById('studentName').value;
             
-            // Save name to LocalStorage so we can use it in the next page
+            // 2. Save the name to the browser's local storage
             localStorage.setItem('playerName', name);
             
-            // For now, alert the user. 
-            // LATER: We will change this line to redirect to the actual game page (e.g., window.location.href = 'game.html')
-            alert("Welcome to the school, " + name + ". Your journey begins now.");
+            // 3. Redirect the browser to the game file
+            // MAKE SURE your other file is named 'game.html' and is in the same folder!
+            window.location.href = 'game.html';
         });
     </script>
 
