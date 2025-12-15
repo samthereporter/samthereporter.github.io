@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulation</title>
     <style>
-        /* RESET */
+        /* RESET & BASE */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -18,18 +18,19 @@
 
         /* --- LAYERS --- */
 
-        /* LAYER 1: BACKGROUND */
+        /* 1. BACKGROUND */
         #bg-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #222; /* Dark Grey fallback so you know if image is missing */
+            background-color: #222; 
             background-image: url('images/school.jpg'); 
             background-size: cover;
             background-position: center;
             z-index: 1;
+            transition: opacity 0.5s ease-in-out;
         }
 
-        /* LAYER 2: STATS & TIME */
+        /* 2. TOP UI (STATS & TIME) */
         .stats-container {
             position: absolute;
             top: 20px; right: 20px;
@@ -43,12 +44,12 @@
         .stats-bar {
             background: rgba(0, 0, 0, 0.8);
             color: #fff;
-            padding: 15px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
             display: flex;
-            gap: 30px; 
+            gap: 20px; 
             font-family: sans-serif;
-            font-size: 1.1rem; 
+            font-size: 1rem; 
             text-transform: uppercase;
             letter-spacing: 1px;
             border: 2px solid #555;
@@ -60,19 +61,18 @@
             background: rgba(0, 0, 0, 0.9);
             color: #eee;
             padding: 8px 20px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 1.2rem;
             font-weight: bold;
             border: 1px solid #777;
-            text-shadow: 0 0 5px #fff;
         }
 
-        /* NOTIFICATIONS */
+        /* 3. NOTIFICATIONS */
         #stat-notification {
             position: absolute;
-            top: 130px; 
-            right: 40px;
+            top: 110px; 
+            right: 30px;
             text-align: right;
             font-family: sans-serif;
             font-weight: bold;
@@ -83,7 +83,7 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* LAYER 3: DIALOGUE CONTAINER */
+        /* 4. DIALOGUE CONTAINER */
         #dialogue-container {
             position: absolute;
             bottom: 0; left: 0; width: 100%;
@@ -93,7 +93,7 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* LAYER 4: CHARACTER */
+        /* 5. CHARACTER */
         #character-sprite {
             position: absolute;
             bottom: 0; 
@@ -107,7 +107,7 @@
             transition: opacity 0.3s ease-in-out;
         }
 
-        /* LAYER 5: TEXT BOX */
+        /* 6. TEXT BOX */
         .text-box-bg {
             position: absolute;
             bottom: 30px; 
@@ -124,7 +124,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            pointer-events: auto; 
+            pointer-events: auto; /* IMPORTANT: Allows clicking text box */
         }
 
         #story-text {
@@ -134,16 +134,6 @@
             white-space: pre-wrap;
             overflow-y: auto; 
             padding-right: 15px; 
-            -webkit-overflow-scrolling: touch; 
-        }
-
-        #story-text::-webkit-scrollbar { width: 10px; }
-        #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 5px; }
-        #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 5px; border: 2px solid rgba(0,0,0,0.9); }
-
-        @media (max-height: 800px) {
-            #story-text { font-size: 1.1rem; }
-            #character-sprite { height: 80vh; }
         }
 
         .continue-prompt {
@@ -157,7 +147,7 @@
         }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* CHOICES OVERLAY */
+        /* 7. CHOICES OVERLAY */
         #choices-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -201,7 +191,7 @@
             max-width: 80%;
         }
 
-        /* TIME SKIP */
+        /* 8. TIME SKIP */
         #time-skip-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -228,7 +218,7 @@
             cursor: pointer;
         }
 
-        /* MAP INTERFACE */
+        /* 9. MAP INTERFACE */
         #map-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -280,7 +270,6 @@
             border-color: #333;
         }
 
-        /* Map Button Positions */
         #btn-class { top: 30%; left: 20%; }
         #btn-hallway { top: 30%; right: 20%; }
         #btn-work { bottom: 30%; left: 50%; transform: translateX(-50%); }
@@ -312,7 +301,7 @@
     <div id="dialogue-container">
         <img id="character-sprite" src="" alt="Character">
         <div class="text-box-bg">
-            <div id="story-text"></div>
+            <div id="story-text">Loading...</div>
             <div id="continuePrompt" class="continue-prompt">Click or Press Space to continue ▼</div>
         </div>
     </div>
@@ -329,14 +318,10 @@
 
 
     <script>
-        // --- DIAGNOSTIC TOOL ---
-        // This runs immediately. If it alerts you, the file is missing/misnamed.
-        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.png', 'images/boy.png', 'images/girl.png'];
-        requiredImages.forEach(src => {
-            const img = new Image();
-            img.src = src;
-            img.onerror = () => console.log("Missing file: " + src);
-        });
+        // --- ERROR TRAP ---
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert("GAME ERROR:\n" + message + "\nLine: " + lineno);
+        };
 
         // --- GAME STATE ---
         let state = {
@@ -360,17 +345,14 @@
         const typeSpeed = 25; 
         let typeTimeouts = []; 
 
-        // --- ASSET SETUP ---
+        // --- ASSETS ---
+        // Using 'nun.jpg' because user uploaded jpg.
         const charImgElement = document.getElementById('character-sprite');
         let playerImage = 'images/boy.png'; 
-
-        if (state.gender === 'female') {
-            playerImage = 'images/girl.png';
-        }
-        
+        if (state.gender === 'female') playerImage = 'images/girl.png';
         charImgElement.src = playerImage;
 
-        // --- INTRO SEQUENCE ---
+        // --- INTRO TEXT ---
         const introSequence = [
             "The year is 1970 and you, as an Indigenous person belonging to the Métis tribe, are attending Île-à-la-Crosse Residential School.",
             "Following the resistances of 1869 and 1885, Métis were often considered by the government and the churches to be rebellious or squatters. Many communities were forcibly relocated to Road Allowances in the Prairies.\n\nAround the turn of the 20th century, the federal government created classes of Métis to guide admission. In a letter from school officials, the three 'classes' were described as:\n\n1. Those who live the ordinary settled life.\n2. Those who live the Indian mode of life.\n3. Those who – and they form the most unfortunate class – are the illegitimate offspring of Indian women.",
@@ -388,8 +370,6 @@
                     { text: "No", action: "exitGame" }
                 ]
             },
-
-            // --- SCENE 1 ---
             "start_part1": {
                 bg: "images/road.JPG", 
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters".`,
@@ -405,8 +385,6 @@
                     { text: "Speak Michif.", nextScene: "walk_intro", effects: { hunger: 5, warmth: 0, spirit: 15 } }
                 ]
             },
-
-            // --- SCENE 2 ---
             "walk_intro": {
                 bg: "images/road.JPG",
                 text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt the government calls a road allowance, the only place they let us be. Momma tried to make me look nice, but I know what those people think when they look at us. They see "squatters." They see "filth." I just see the only home I’ve ever known, tucked away in the bush where we tried to stay hidden.`,
@@ -427,8 +405,6 @@
                 text: `Maybe this new school will be different?\n\nMaybe I can finally belong?`, 
                 nextScene: "arrival_scene" 
             },
-
-            // --- SCENE 3 ---
             "arrival_scene": {
                 bg: "images/school2.jpg", 
                 effects: { spirit: -25, hunger: 15, warmth: -50 },
@@ -450,37 +426,31 @@
                 text: `The Sisters of Charity say we clutter the halls if we come in before morning prayer. I must wait.`,
                 specialAction: "triggerTimeSkip" 
             },
-
-            // --- NUN ENCOUNTER ---
             "school_entry": { 
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png", 
+                characterImg: "images/nun.jpg", 
                 text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.", 
                 nextScene: "nun_dialogue_1"
             },
             "nun_dialogue_1": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet. You're lucky we let you in at all.`,
                 nextScene: "nun_dialogue_2"
             },
             "nun_dialogue_2": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
-
-            // --- MAP SCENES ---
-
             "scene_class": {
                 bg: "images/school2.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `In the classroom, the teacher holds a ruler like a weapon. "English only," she commands. "That other gibberish is the devil's tongue."\n\nClass drags on. You struggle to understand the lesson, but you stay silent. Speaking up means punishment.`,
                 effects: { spirit: -10, hunger: 10 },
                 specialAction: "returnToMap"
             },
-
             "scene_hallway": {
                 bg: "images/school2.jpg", 
                 characterImg: null,
@@ -488,7 +458,6 @@
                 effects: { spirit: -10 },
                 specialAction: "returnToMap"
             },
-
             "scene_lunch": {
                 bg: "images/school2.jpg", 
                 characterImg: null, 
@@ -496,15 +465,13 @@
                 effects: { hunger: 10, warmth: -10, spirit: -5 },
                 specialAction: "returnToMap"
             },
-
             "scene_work": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: "[DYNAMIC_TEXT]", 
                 effects: { hunger: 20, spirit: -15, warmth: 0 },
                 nextScene: "end_of_day"
             },
-
             "end_of_day": {
                 bg: "images/road.JPG",
                 characterImg: null, 
@@ -516,10 +483,11 @@
             }
         };
 
-        // --- ENGINE LOGIC ---
+        // --- FUNCTIONS ---
 
         function typeWriter(text, elementId, callback) {
             const element = document.getElementById(elementId);
+            if (!element) return;
             element.innerHTML = ""; 
             state.isTyping = true;
             document.getElementById('continuePrompt').style.visibility = 'hidden'; 
@@ -589,11 +557,13 @@
             if (scene.characterImg === null) {
                  charImg.style.opacity = 0;
             } else if (scene.characterImg) {
+                // If the scene wants a specific image, load it.
                 if (!charImg.src.includes(scene.characterImg)) {
                      charImg.style.opacity = 0; 
                      setTimeout(() => { charImg.src = scene.characterImg; charImg.style.opacity = 0.95; }, 200);
                 } else { charImg.style.opacity = 0.95; }
             } else {
+                // Return to player image
                 let playerDefault = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
                 if (!charImg.src.includes(playerDefault)) {
                     charImg.style.opacity = 0; 
@@ -605,10 +575,11 @@
 
             let processedText = scene.text.replace("[Name]", state.name);
 
-            // FORCE BG UPDATE
             if (scene.bg) {
                  const bgLayer = document.getElementById('bg-layer');
-                 bgLayer.style.backgroundImage = `url('${scene.bg}')`;
+                 if (!bgLayer.style.backgroundImage.includes(scene.bg)) {
+                     bgLayer.style.backgroundImage = `url('${scene.bg}')`;
+                 }
             }
 
             typeWriter(processedText, 'story-text', () => {
@@ -692,16 +663,26 @@
             const btnHall = document.getElementById('btn-hallway');
             const btnWork = document.getElementById('btn-work');
 
+            // Default Disabled
             btnClass.disabled = true;
             btnHall.disabled = true;
             btnWork.disabled = true;
 
+            // MORNING RULES (8am - 12pm)
             if (state.time < 12) {
-                if (state.time <= 9) btnClass.disabled = false;
-                if (state.time < 12) btnHall.disabled = false;
+                // If scene visited, keep disabled
+                let classVisited = state.visitedScenes.includes('scene_class');
+                let hallVisited = state.visitedScenes.includes('scene_hallway');
+
+                // Class (3h): Only if time is 8 or 9 (since 9+3=12)
+                if (!classVisited && state.time <= 9) btnClass.disabled = false;
+                
+                // Hallway (1h): Only if time < 12
+                if (!hallVisited && state.time < 12) btnHall.disabled = false;
             } 
+            // AFTERNOON RULES (Lunch eaten)
             else if (state.lunchEaten) {
-                btnWork.disabled = false; 
+                btnWork.disabled = false; // Only work allowed
             }
         }
 
@@ -713,14 +694,20 @@
 
         function triggerMapScene(sceneId, duration) {
             hideMap();
+            if (!state.visitedScenes.includes(sceneId)) {
+                state.visitedScenes.push(sceneId);
+            }
+            
             if (duration) {
                 state.time += duration;
                 updateTimeDisplay();
             }
+            
             showScene(sceneId);
         }
 
         function returnToMapLogic() {
+            // LUNCH TRAP: If 12:00 or later and lunch NOT eaten, FORCE LUNCH
             if (state.time >= 12 && !state.lunchEaten) {
                 state.lunchEaten = true;
                 state.time += 1;
@@ -788,12 +775,14 @@
             }
         }
 
-        document.body.addEventListener('click', advanceGlobal);
-        document.body.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') advanceGlobal(e);
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener('click', advanceGlobal);
+            document.body.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') advanceGlobal(e);
+            });
+            typeWriter(introSequence[0], 'story-text');
         });
-
-        typeWriter(introSequence[0], 'story-text');
 
     </script>
 </body>
