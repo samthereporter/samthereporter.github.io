@@ -124,7 +124,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            pointer-events: auto; /* IMPORTANT: Allows clicking text box */
+            pointer-events: auto; 
         }
 
         #story-text {
@@ -282,7 +282,7 @@
 
     <div id="map-layer">
         <h1 class="map-title">Schedule</h1>
-        <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class', 3)">Classroom (3h)</button>
+        <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
         <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway', 1)">Hallway (1h)</button>
         <button class="map-btn" id="btn-work" onclick="triggerMapScene('scene_work', 4)">School Labor (4h)</button>
     </div>
@@ -346,11 +346,18 @@
         let typeTimeouts = []; 
 
         // --- ASSETS ---
-        // Using 'nun.jpg' because user uploaded jpg.
         const charImgElement = document.getElementById('character-sprite');
         let playerImage = 'images/boy.png'; 
         if (state.gender === 'female') playerImage = 'images/girl.png';
         charImgElement.src = playerImage;
+
+        // Check required images including class.jpg
+        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.jpg', 'images/boy.png', 'images/girl.png', 'images/class.jpg'];
+        requiredImages.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onerror = () => console.warn("Missing file: " + src);
+        });
 
         // --- INTRO TEXT ---
         const introSequence = [
@@ -444,13 +451,53 @@
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
-            "scene_class": {
-                bg: "images/school2.jpg", 
+
+            // --- THE NEW CLASSROOM SEQUENCE ---
+            "scene_class_start": {
+                bg: "images/class.jpg", 
+                characterImg: null, // Just observation
+                text: `The room is austere. A crucifix hangs prominently on the wall.`,
+                nextScene: "scene_class_language"
+            },
+            "scene_class_language": {
+                bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
-                text: `In the classroom, the teacher holds a ruler like a weapon. "English only," she commands. "That other gibberish is the devil's tongue."\n\nClass drags on. You struggle to understand the lesson, but you stay silent. Speaking up means punishment.`,
-                effects: { spirit: -10, hunger: 10 },
+                text: `I heard speaking in the hallway earlier. I heard that... dialect. You know the rules. English is the language of this school. If I hear that 'Michif' or Cree gibberish again, you will be punished. Do not think because you are older now that the rules have changed. You will speak proper English, or you will not speak at all. Some of you seem determined to remain 'externs,' outsiders to civilization, no matter how hard we try to save you.`,
+                nextScene: "scene_class_yvonne"
+            },
+            "scene_class_yvonne": {
+                bg: "images/class.jpg", 
+                characterImg: "images/nun.jpg",
+                text: `Let's hope we do not have another Yvonne incident... *she violently points to her ruler* young lady do you want to tell the new students what happened when you used your forbidden nonsense?`,
+                nextScene: "scene_class_silence"
+            },
+            "scene_class_silence": {
+                bg: "images/class.jpg", 
+                characterImg: null, // Yvonne is not shown
+                text: `... *Yvonne refuses to answer, staring at her desk.*`,
+                nextScene: "scene_class_scrutiny"
+            },
+            "scene_class_scrutiny": {
+                bg: "images/class.jpg", 
+                characterImg: "images/nun.jpg",
+                text: `(She stands stiffly at the front of the room, her eyes scanning the students before landing on you. She notes the dust on your clothes from the road allowance.)`,
+                nextScene: "scene_class_posture"
+            },
+            "scene_class_posture": {
+                bg: "images/class.jpg", 
+                characterImg: "images/nun.jpg",
+                text: `That's what I thought. We will be continuing our history lesson today. Sit up straight. You must learn to hold yourselves with dignity, not slouched over like you are sitting around a campfire. We are here to prepare you for the modern world, to make you useful citizens, not to encourage the savage ways your family taught you.`,
+                nextScene: "scene_class_history"
+            },
+            "scene_class_history": {
+                bg: "images/class.jpg", 
+                characterImg: "images/nun.jpg",
+                text: `Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here. It is only through the grace of God and the discipline of the Church that you are receiving an education at all. Your parents... well, they do not understand the value of what we are giving you here. If it were up to them, you would be running wild in the bush. *mutters to herself* for some of you maybe running off to your inevitable end.`,
+                effects: { spirit: -10, hunger: 5, warmth: 20 },
                 specialAction: "returnToMap"
             },
+
+            // --- OTHER SCENES ---
             "scene_hallway": {
                 bg: "images/school2.jpg", 
                 characterImg: null,
@@ -671,7 +718,7 @@
             // MORNING RULES (8am - 12pm)
             if (state.time < 12) {
                 // If scene visited, keep disabled
-                let classVisited = state.visitedScenes.includes('scene_class');
+                let classVisited = state.visitedScenes.includes('scene_class_start'); // Updated ID
                 let hallVisited = state.visitedScenes.includes('scene_hallway');
 
                 // Class (3h): Only if time is 8 or 9 (since 9+3=12)
