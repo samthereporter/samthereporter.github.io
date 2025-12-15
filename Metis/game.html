@@ -283,7 +283,7 @@
     <div id="map-layer">
         <h1 class="map-title">Schedule</h1>
         <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
-        <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway', 1)">Hallway (1h)</button>
+        <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway_start', 1)">Hallway (1h)</button>
         <button class="map-btn" id="btn-work" onclick="triggerMapScene('scene_work', 4)">School Labor (4h)</button>
     </div>
 
@@ -351,8 +351,8 @@
         if (state.gender === 'female') playerImage = 'images/girl.png';
         charImgElement.src = playerImage;
 
-        // Check required images including class.jpg
-        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.png', 'images/boy.png', 'images/girl.png', 'images/class.jpg'];
+        // Check required images including class.jpg and hallway.jpg
+        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.png', 'images/boy.png', 'images/girl.png', 'images/class.jpg', 'images/hallway.jpg'];
         requiredImages.forEach(src => {
             const img = new Image();
             img.src = src;
@@ -452,10 +452,10 @@
                 specialAction: "triggerMap"
             },
 
-            // --- THE NEW CLASSROOM SEQUENCE ---
+            // --- CLASSROOM SEQUENCE ---
             "scene_class_start": {
                 bg: "images/class.jpg", 
-                characterImg: null, // Just observation
+                characterImg: null, 
                 text: `The room is austere. A crucifix hangs prominently on the wall.`,
                 nextScene: "scene_class_language"
             },
@@ -473,7 +473,7 @@
             },
             "scene_class_silence": {
                 bg: "images/class.jpg", 
-                characterImg: null, // Yvonne is not shown
+                characterImg: null, 
                 text: `... *Yvonne refuses to answer, staring at her desk.*`,
                 nextScene: "scene_class_scrutiny"
             },
@@ -497,14 +497,58 @@
                 specialAction: "returnToMap"
             },
 
-            // --- OTHER SCENES ---
-            "scene_hallway": {
-                bg: "images/school2.jpg", 
-                characterImg: null,
-                text: `You pass your brother in the hallway. There is an invisible line painted on the floor—boys on one side, girls on the other. \n\nHe looks thin. You offer a small, hidden wave. He blinks back tears and keeps walking.`,
-                effects: { spirit: -10 },
+            // --- HALLWAY SEQUENCE (UPDATED) ---
+            "scene_hallway_start": {
+                bg: "images/hallway.jpg",
+                characterImg: null, // Just atmosphere
+                text: `The hallway smells of floor wax and old cabbage. You try to move quickly to your next task, keeping your head down to avoid attention. But the narrow corridor makes it impossible to hide.`,
+                // SPECIAL CHECK FOR GENDER
+                specialAction: "checkGenderHallway"
+            },
+
+            // GIRL BRANCH
+            "scene_hallway_girl_1": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `Cree Student (Girl): (She steps out from a doorway, blocking your path. Two other girls stand behind her, arms crossed. She stares at your lighter skin with open disdain.)\n\n"Where do you think you are going, Monias? You walk around here like you are better than us, just because your father was a white man. But look at you. You are nothing. You aren't white enough for them, and you certainly aren't one of us."`,
+                nextScene: "scene_hallway_girl_2"
+            },
+            "scene_hallway_girl_2": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `(She steps closer, shoving your shoulder hard, knocking the slate against your chest.)\n\n"You don't belong in this school. This place is for Indians. You don't have a Treaty number, do you? No. You are just a 'half-breed' charity case. Taking our food. Taking up space."`,
+                nextScene: "scene_hallway_girl_3"
+            },
+            "scene_hallway_girl_3": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `(She leans in, lowering her voice to a cruel whisper.)\n\n"My mother told me about people like you. 'Les Petites Sauvages,' the white townspeople call you. But in here? You are just a 'bannock-eater'. You act like you are special because maybe you speak French, or maybe you have some fancy beads sewn poorly on your scarf, but you are just an illegitimate mistake. Go cry to the nuns. They are the only ones who want you here."`,
+                effects: { spirit: -20, warmth: -5 },
                 specialAction: "returnToMap"
             },
+
+            // BOY BRANCH
+            "scene_hallway_boy_1": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `Cree Student (Boy): (He and two larger boys surround you, cutting off the end of the hallway. The leader grabs the front of your shirt and slams you back against the wooden wainscoting.)\n\n"What are you looking at, Monias?\n\n(He sneers, looking at your face.)\n\nYou are a traitor. Your grandfathers helped the white man take our land, and now you come here to breathe OUR air?"`,
+                nextScene: "scene_hallway_boy_2"
+            },
+            "scene_hallway_boy_2": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `"This school is for Indians. Real Indians. Not for road allowance trash."\n\n(He signals the other boys. They move in, kicking at your shins and punching your sides—quick, sharp blows designed to bruise but not break bones that would alert the Brothers.)`,
+                nextScene: "scene_hallway_boy_3"
+            },
+            "scene_hallway_boy_3": {
+                bg: "images/hallway.jpg",
+                characterImg: null, 
+                text: `"You don't have a band. You don't have a chief. You are nobody's child. If you tell the Supervisor, we will tell them you started it. And who will they believe? The savage, or the half-breed who doesn't know his place? Stay away from us. Next time, we won't stop with just a few kicks."`,
+                effects: { spirit: -20, hunger: 5 },
+                specialAction: "returnToMap"
+            },
+
+            // --- LUNCH & WORK ---
             "scene_lunch": {
                 bg: "images/school2.jpg", 
                 characterImg: null, 
@@ -584,6 +628,13 @@
         }
 
         function showScene(sceneId) {
+            // GENDER REDIRECT for Hallway
+            if (sceneId === "checkGenderHallway") {
+                if (state.gender === 'female') showScene("scene_hallway_girl_1");
+                else showScene("scene_hallway_boy_1");
+                return;
+            }
+
             const scene = storyData[sceneId];
             if (!scene) return alert("Error: Scene not found: " + sceneId);
 
@@ -604,13 +655,11 @@
             if (scene.characterImg === null) {
                  charImg.style.opacity = 0;
             } else if (scene.characterImg) {
-                // If the scene wants a specific image, load it.
                 if (!charImg.src.includes(scene.characterImg)) {
                      charImg.style.opacity = 0; 
                      setTimeout(() => { charImg.src = scene.characterImg; charImg.style.opacity = 0.95; }, 200);
                 } else { charImg.style.opacity = 0.95; }
             } else {
-                // Return to player image
                 let playerDefault = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
                 if (!charImg.src.includes(playerDefault)) {
                     charImg.style.opacity = 0; 
@@ -710,26 +759,16 @@
             const btnHall = document.getElementById('btn-hallway');
             const btnWork = document.getElementById('btn-work');
 
-            // Default Disabled
             btnClass.disabled = true;
             btnHall.disabled = true;
             btnWork.disabled = true;
 
-            // MORNING RULES (8am - 12pm)
             if (state.time < 12) {
-                // If scene visited, keep disabled
-                let classVisited = state.visitedScenes.includes('scene_class_start'); // Updated ID
-                let hallVisited = state.visitedScenes.includes('scene_hallway');
-
-                // Class (3h): Only if time is 8 or 9 (since 9+3=12)
-                if (!classVisited && state.time <= 9) btnClass.disabled = false;
-                
-                // Hallway (1h): Only if time < 12
-                if (!hallVisited && state.time < 12) btnHall.disabled = false;
+                if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
+                if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
             } 
-            // AFTERNOON RULES (Lunch eaten)
             else if (state.lunchEaten) {
-                btnWork.disabled = false; // Only work allowed
+                btnWork.disabled = false; 
             }
         }
 
@@ -754,7 +793,6 @@
         }
 
         function returnToMapLogic() {
-            // LUNCH TRAP: If 12:00 or later and lunch NOT eaten, FORCE LUNCH
             if (state.time >= 12 && !state.lunchEaten) {
                 state.lunchEaten = true;
                 state.time += 1;
@@ -812,6 +850,9 @@
                 else if (state.currentScene.specialAction === "returnToMap") {
                     returnToMapLogic();
                 }
+                else if (state.currentScene.specialAction === "checkGenderHallway") {
+                    showScene("checkGenderHallway");
+                }
                 else if (state.currentScene.choices) {
                     presentChoices(state.currentScene);
                     state.waitingForInput = false; 
@@ -822,14 +863,12 @@
             }
         }
 
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', () => {
-            document.body.addEventListener('click', advanceGlobal);
-            document.body.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') advanceGlobal(e);
-            });
-            typeWriter(introSequence[0], 'story-text');
+        document.body.addEventListener('click', advanceGlobal);
+        document.body.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') advanceGlobal(e);
         });
+
+        typeWriter(introSequence[0], 'story-text');
 
     </script>
 </body>
