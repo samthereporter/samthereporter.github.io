@@ -18,12 +18,11 @@
 
         /* --- LAYERS --- */
 
-        /* LAYER 1: BACKGROUND */
+        /* LAYER 1: BACKGROUND (Bottom) */
         #bg-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: #111; 
-            /* UPDATED PATH: Looks inside the images folder */
             background-image: url('images/school.jpg'); 
             background-size: cover;
             background-position: center;
@@ -54,37 +53,39 @@
         #dialogue-container {
             position: absolute;
             bottom: 0; left: 0; width: 100%;
-            height: 35vh; 
+            height: 100vh; /* Full height to allow positioning */
             z-index: 5;
             pointer-events: none; 
         }
 
-        /* LAYER 4: CHARACTER SILHOUETTE */
+        /* LAYER 4: CHARACTER SILHOUETTE (Behind Text Box) */
         #character-sprite {
             position: absolute;
             bottom: 0; 
             left: 5%; 
             height: 85vh; 
             width: auto;
-            z-index: 6; 
+            z-index: 5; /* LOWER than text box */
             pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
             opacity: 0.95;
         }
 
-        /* LAYER 5: TEXT BOX */
+        /* LAYER 5: TEXT BOX (On Top of Character) */
         .text-box-bg {
             position: absolute;
             bottom: 20px; left: 50%;
             transform: translateX(-50%);
             width: 90%;
             height: 25vh;
-            background: rgba(0, 0, 0, 0.85); 
+            /* High opacity background to make text readable over the character legs */
+            background: rgba(0, 0, 0, 0.9); 
             border: 2px solid #555;
             border-radius: 10px;
-            padding: 30px 40px 30px 250px; 
+            /* FIXED: Removed the huge 250px left padding */
+            padding: 30px 40px; 
             color: #fff;
-            z-index: 4; 
+            z-index: 10; /* HIGHER than character */
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
@@ -183,7 +184,6 @@
         function checkImage(id, filename) {
             const img = document.getElementById(id);
             img.onerror = function() {
-                // If it fails, we explicitly mention the images folder in the error
                 alert("SYSTEM ERROR: Cannot find '" + filename + "'.\nMake sure it is inside the 'images' folder!");
                 img.style.border = "2px solid red"; 
             };
@@ -204,10 +204,9 @@
         const typeSpeed = 25; 
         let typeTimeouts = []; 
 
-        // --- ASSET SETUP (UPDATED PATHS) ---
+        // --- ASSET SETUP ---
         const charImgElement = document.getElementById('character-sprite');
         
-        // UPDATED: Now points to 'images/' folder
         if (state.gender === 'female') {
             charImgElement.src = 'images/girl.png';
             checkImage('character-sprite', 'images/girl.png'); 
@@ -224,7 +223,7 @@
             "(You will begin your day waking up in your family's home on the Road Allowance. You must navigate a typical day at the Île-à-la-Crosse Residential School. Pay close attention to your three vital statistics: Hunger, Warmth, and Spirit. Your choices will determine how these fluctuate. If they drop too low, you will face severe consequences. Survive the day.)"
         ];
 
-        // --- STORY DATA (UPDATED PATHS) ---
+        // --- STORY DATA ---
         const storyData = {
             "ready_check": {
                 text: "[Name], are you ready to begin your journey?",
@@ -235,7 +234,6 @@
                 ]
             },
             "start": {
-                // UPDATED: Now points to 'images/' folder
                 bg: "images/school.jpg", 
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters". <br><br>The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush, and if you are late, the doors might be locked.`,
                 promptLabel: "What do you do?",
@@ -330,7 +328,6 @@
 
             if (scene.bg) {
                  const bgLayer = document.getElementById('bg-layer');
-                 // Ensure we check for the 'images/' prefix in the check to avoid reloading
                  if (!bgLayer.style.backgroundImage.includes(scene.bg)) {
                      bgLayer.style.backgroundImage = `url('${scene.bg}')`;
                  }
