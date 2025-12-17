@@ -30,7 +30,7 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* 2. TOP UI (STATS, TIME, NOTEBOOK) */
+        /* 2. TOP UI (STATS, TIME, NOTEBOOK, AUDIO) */
         .top-ui-container {
             position: absolute;
             top: 20px; right: 20px;
@@ -38,7 +38,7 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
-            z-index: 15; /* Above everything */
+            z-index: 15; 
         }
 
         .stats-bar {
@@ -68,23 +68,27 @@
             border: 1px solid #777;
         }
 
-        /* NOTEBOOK BUTTON */
-        #notebook-btn {
-            background: #8B4513; /* SaddleBrown */
+        /* UI BUTTONS */
+        .ui-btn {
+            background: #8B4513; 
             color: #fff;
             border: 2px solid #D2691E;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
             font-family: serif;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             transition: transform 0.2s;
-            margin-top: 10px;
+            margin-top: 5px;
+            text-align: center;
+            width: 100%;
         }
-        #notebook-btn:hover { transform: scale(1.05); background: #A0522D; }
+        .ui-btn:hover { transform: scale(1.05); background: #A0522D; }
         
-        /* NOTEBOOK MODAL (HIDDEN) */
+        #audio-btn { background: #333; border-color: #555; }
+
+        /* NOTEBOOK MODAL */
         #notebook-modal {
             display: none;
             position: absolute;
@@ -92,7 +96,7 @@
             transform: translate(-50%, -50%);
             width: 80%; max-width: 600px;
             height: 70vh;
-            background-color: #FDF5E6; /* Old Lace */
+            background-color: #FDF5E6; 
             color: #333;
             border: 10px solid #5D4037;
             border-radius: 5px;
@@ -130,7 +134,7 @@
         /* 3. NOTIFICATIONS */
         #stat-notification {
             position: absolute;
-            top: 200px; /* Moved down to avoid notebook btn */
+            top: 250px; 
             right: 30px;
             text-align: right;
             font-family: sans-serif;
@@ -346,6 +350,11 @@
 </head>
 <body>
 
+    <audio id="bgm-wind" loop><source src="images/wind.mp3" type="audio/mpeg"></audio>
+    <audio id="bgm-hall" loop><source src="images/hallway.mp3" type="audio/mpeg"></audio>
+    <audio id="bgm-class" loop><source src="images/class.mp3" type="audio/mpeg"></audio>
+    <audio id="sfx-bell"><source src="images/bell.mp3" type="audio/mpeg"></audio>
+
     <div id="bg-layer"></div>
 
     <div id="map-layer">
@@ -362,7 +371,8 @@
             <span>Spirit: <span id="spirit-stat" class="stat-value">100%</span></span>
         </div>
         <div class="time-display" id="timeDisplay">8:00 AM</div>
-        <button id="notebook-btn" onclick="toggleNotebook()">📖 Historical Notebook</button>
+        <button class="ui-btn" id="notebook-btn" onclick="toggleNotebook()">📖 Historical Notebook</button>
+        <button class="ui-btn" id="audio-btn" onclick="toggleMute()">🔊 Audio: ON</button>
     </div>
     
     <div id="stat-notification"></div>
@@ -417,7 +427,9 @@
             visitedScenes: [], 
             mapActive: false,
             lunchEaten: false,
-            unlockedTerms: [] // Track unlocked definitions
+            unlockedTerms: [],
+            isMuted: false,
+            currentTrack: null // Tracks which audio ID is currently playing
         };
 
         const typeSpeed = 25; 
@@ -429,14 +441,7 @@
         if (state.gender === 'female') playerImage = 'images/girl.png';
         charImgElement.src = playerImage;
 
-        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.jpg', 'images/boy.png', 'images/girl.png', 'images/class.jpg', 'images/hallway.jpg'];
-        requiredImages.forEach(src => {
-            const img = new Image();
-            img.src = src;
-            img.onerror = () => console.warn("Missing file: " + src);
-        });
-
-        // --- NOTEBOOK DATA ---
+        // NOTEBOOK DATA
         const notebookDB = {
             "road_allowance": {
                 term: "Road Allowance",
@@ -460,7 +465,7 @@
             }
         };
 
-        // --- INTRO TEXT ---
+        // --- INTRO ---
         const introSequence = [
             "The year is 1970 and you, as an Indigenous person belonging to the Métis tribe, are attending Île-à-la-Crosse Residential School.",
             "Following the resistances of 1869 and 1885, Métis were often considered by the government and the churches to be rebellious or squatters. Many communities were forcibly relocated to Road Allowances in the Prairies.\n\nAround the turn of the 20th century, the federal government created classes of Métis to guide admission. In a letter from school officials, the three 'classes' were described as:\n\n1. Those who live the ordinary settled life.\n2. Those who live the Indian mode of life.\n3. Those who – and they form the most unfortunate class – are the illegitimate offspring of Indian women.",
@@ -468,24 +473,26 @@
             "(You will begin your day waking up in your family's home on the Road Allowance. You must navigate a typical day at the Île-à-la-Crosse Residential School. Pay close attention to your three vital statistics: Hunger, Warmth, and Spirit. Your choices will determine how these fluctuate. If they drop too low, you will face severe consequences. Survive the day.)"
         ];
 
-        // --- STORY DATA ---
+        // --- STORY DATA (WITH AUDIO) ---
         const storyData = {
             "ready_check": {
                 text: "[Name], are you ready to begin your journey?",
                 promptLabel: "Are you ready?",
                 choices: [
-                    { text: "Yes", nextScene: "start_part1" }, 
+                    { text: "Yes (Start Audio)", nextScene: "start_part1", action: "startAudio" }, 
                     { text: "No", action: "exitGame" }
                 ]
             },
             "start_part1": {
                 bg: "images/road.JPG", 
+                audio: "bgm-wind", // WIND SOUND
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters".`,
                 nextScene: "start_part2",
-                unlocks: ["road_allowance", "squatter"] // UNLOCKS ADDED HERE
+                unlocks: ["road_allowance", "squatter"] 
             },
             "start_part2": {
                 bg: "images/road.JPG", 
+                audio: "bgm-wind",
                 text: `The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush, and if you are late, the doors might be locked.`,
                 promptLabel: "What do you do?",
                 choices: [
@@ -496,157 +503,179 @@
             },
             "walk_intro": {
                 bg: "images/road.JPG",
+                audio: "bgm-wind",
                 text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt the government calls a road allowance, the only place they let us be. Momma tried to make me look nice, but I know what those people think when they look at us. They see "squatters." They see "filth." I just see the only home I’ve ever known, tucked away in the bush where we tried to stay hidden.`,
                 nextScene: "walk_cold"
             },
             "walk_cold": { 
                 bg: "images/road.JPG", 
+                audio: "bgm-wind",
                 text: `Three miles. It feels longer when the wind cuts right through this coat. Momma fixed it up best she could but the noticeable holes in the fabric make it hard not to freeze.\n\nI keep my head down, watching my boots sink into the snow, trying to ignore the sting in my ears. I’m an "extern," that’s what they call us. Not a boarder, not fully part of the school, just someone walking in from the bush.`,
                 nextScene: "walk_identity",
-                unlocks: ["extern"] // UNLOCK ADDED
+                unlocks: ["extern"] 
             },
             "walk_identity": { 
                 bg: "images/road.JPG", 
+                audio: "bgm-wind",
                 text: `I listened to Dad argue with the Indian Agent. It’s always the same. We are too "white" for the Treaty benefits, but too "Indian" for the town schools. I am a problem they don't know how to solve, so they just shuffle me around.`,
                 nextScene: "walk_hope" 
             },
             "walk_hope": { 
                 bg: "images/road.JPG", 
+                audio: "bgm-wind",
                 text: `Maybe this new school will be different?\n\nMaybe I can finally belong?`, 
                 nextScene: "arrival_scene" 
             },
             "arrival_scene": {
                 bg: "images/school2.jpg", 
+                audio: "bgm-wind",
                 effects: { spirit: -25, hunger: 15, warmth: -50 },
                 text: `I finally arrive at the school, part of me feels comfort that I made it this far but part of me wishes I stayed back at home helping father chop some firewood to keep us through the night.`,
                 nextScene: "arrival_father"
             },
             "arrival_father": { 
                 bg: "images/school2.jpg", 
+                audio: "bgm-wind",
                 text: `He's getting sicker by the day I can tell, but he won't show any sign of pain. I know he's looking out for our family but it hurts to see him like this. Momma tried bringing him to the hospital but he was turned away and called a "filthy half-breed."`,
                 nextScene: "arrival_locked_out" 
             },
             "arrival_locked_out": { 
                 bg: "images/school2.jpg", 
+                audio: "bgm-wind",
                 text: `I look up and realize that I arrived early. The wind is biting at my nose, but the heavy wooden doors are shut tight. Through the frosted glass, I can see the yellow glow of the lamps in the hallway. It looks warm in there. But we are ‘externs.’ That’s the word they use for us. It means we don't belong inside until they ring the bell. It doesn't matter that my toes are numb or that the walk from the road allowance took an hour. To them, being early just means we wait in the snow.`,
                 nextScene: "arrival_waiting" 
             },
             "arrival_waiting": { 
                 bg: "images/school2.jpg", 
+                audio: "bgm-wind",
                 text: `The Sisters of Charity say we clutter the halls if we come in before morning prayer. I must wait.`,
                 specialAction: "triggerTimeSkip" 
             },
             "school_entry": { 
                 bg: "images/school2.jpg",
                 characterImg: "images/nun.jpg", 
+                audio: "bgm-hall", // HALLWAY SOUND
                 text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.", 
-                nextScene: "nun_dialogue_1"
+                nextScene: "nun_dialogue_1",
+                sfx: "sfx-bell" // PLAY BELL SOUND ONCE
             },
             "nun_dialogue_1": {
                 bg: "images/school2.jpg",
                 characterImg: "images/nun.jpg",
+                audio: "bgm-hall",
                 text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet. You're lucky we let you in at all.`,
                 nextScene: "nun_dialogue_2"
             },
             "nun_dialogue_2": {
                 bg: "images/school2.jpg",
                 characterImg: "images/nun.jpg",
+                audio: "bgm-hall",
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
 
-            // --- CLASSROOM SEQUENCE ---
+            // --- CLASSROOM ---
             "scene_class_start": {
                 bg: "images/class.jpg", 
                 characterImg: null, 
+                audio: "bgm-class", // CLASS SOUND
                 text: `The room is austere. A crucifix hangs prominently on the wall.`,
                 nextScene: "scene_class_language"
             },
             "scene_class_language": {
                 bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class",
                 text: `I heard speaking in the hallway earlier. I heard that... dialect. You know the rules. English is the language of this school. If I hear that 'Michif' or Cree gibberish again, you will be punished. Do not think because you are older now that the rules have changed. You will speak proper English, or you will not speak at all. Some of you seem determined to remain 'externs,' outsiders to civilization, no matter how hard we try to save you.`,
                 nextScene: "scene_class_yvonne",
-                unlocks: ["michif"] // UNLOCK ADDED
+                unlocks: ["michif"] 
             },
             "scene_class_yvonne": {
                 bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class",
                 text: `Let's hope we do not have another Yvonne incident... *she violently points to her ruler* young lady do you want to tell the new students what happened when you used your forbidden nonsense?`,
                 nextScene: "scene_class_silence"
             },
             "scene_class_silence": {
                 bg: "images/class.jpg", 
                 characterImg: null, 
+                audio: "bgm-class",
                 text: `... *Yvonne refuses to answer, staring at her desk.*`,
                 nextScene: "scene_class_scrutiny"
             },
             "scene_class_scrutiny": {
                 bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class",
                 text: `(She stands stiffly at the front of the room, her eyes scanning the students before landing on you. She notes the dust on your clothes from the road allowance.)`,
                 nextScene: "scene_class_posture"
             },
             "scene_class_posture": {
                 bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class",
                 text: `That's what I thought. We will be continuing our history lesson today. Sit up straight. You must learn to hold yourselves with dignity, not slouched over like you are sitting around a campfire. We are here to prepare you for the modern world, to make you useful citizens, not to encourage the savage ways your family taught you.`,
                 nextScene: "scene_class_history"
             },
             "scene_class_history": {
                 bg: "images/class.jpg", 
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class",
                 text: `Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here. It is only through the grace of God and the discipline of the Church that you are receiving an education at all. Your parents... well, they do not understand the value of what we are giving you here. If it were up to them, you would be running wild in the bush. *mutters to herself* for some of you maybe running off to your inevitable end.`,
                 effects: { spirit: -10, hunger: 5, warmth: 20 },
                 specialAction: "returnToMap"
             },
 
-            // --- HALLWAY SEQUENCE ---
+            // --- HALLWAY ---
             "scene_hallway_start": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `The hallway smells of floor wax and old cabbage. You try to move quickly to your next task, keeping your head down to avoid attention. But the narrow corridor makes it impossible to hide.`,
                 specialAction: "checkGenderHallway",
-                unlocks: ["lateral_violence"] // UNLOCK ADDED
+                unlocks: ["lateral_violence"] 
             },
-
-            // GIRL BRANCH
             "scene_hallway_girl_1": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `Cree Student (Girl): (She steps out from a doorway, blocking your path. Two other girls stand behind her, arms crossed. She stares at your lighter skin with open disdain.)\n\n"Where do you think you are going, Monias? You walk around here like you are better than us, just because your father was a white man. But look at you. You are nothing. You aren't white enough for them, and you certainly aren't one of us."`,
                 nextScene: "scene_hallway_girl_2"
             },
             "scene_hallway_girl_2": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `(She steps closer, shoving your shoulder hard, knocking the slate against your chest.)\n\n"You don't belong in this school. This place is for Indians. You don't have a Treaty number, do you? No. You are just a 'half-breed' charity case. Taking our food. Taking up space."`,
                 nextScene: "scene_hallway_girl_3"
             },
             "scene_hallway_girl_3": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `(She leans in, lowering her voice to a cruel whisper.)\n\n"My mother told me about people like you. 'Les Petites Sauvages,' the white townspeople call you. But in here? You are just a 'bannock-eater'. You act like you are special because maybe you speak French, or maybe you have some fancy beads sewn poorly on your scarf, but you are just an illegitimate mistake. Go cry to the nuns. They are the only ones who want you here."`,
                 effects: { spirit: -20, warmth: -5 },
                 specialAction: "returnToMap"
             },
-
-            // BOY BRANCH
             "scene_hallway_boy_1": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `Cree Student (Boy): (He and two larger boys surround you, cutting off the end of the hallway. The leader grabs the front of your shirt and slams you back against the wooden wainscoting.)\n\n"What are you looking at, Monias?\n\n(He sneers, looking at your face.)\n\nYou are a traitor. Your grandfathers helped the white man take our land, and now you come here to breathe OUR air?"`,
                 nextScene: "scene_hallway_boy_2"
             },
             "scene_hallway_boy_2": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `"This school is for Indians. Real Indians. Not for road allowance trash."\n\n(He signals the other boys. They move in, kicking at your shins and punching your sides—quick, sharp blows designed to bruise but not break bones that would alert the Brothers.)`,
                 nextScene: "scene_hallway_boy_3"
             },
             "scene_hallway_boy_3": {
                 bg: "images/hallway.jpg",
                 characterImg: null, 
+                audio: "bgm-hall",
                 text: `"You don't have a band. You don't have a chief. You are nobody's child. If you tell the Supervisor, we will tell them you started it. And who will they believe? The savage, or the half-breed who doesn't know his place? Stay away from us. Next time, we won't stop with just a few kicks."`,
                 effects: { spirit: -20, hunger: 5 },
                 specialAction: "returnToMap"
@@ -656,6 +685,7 @@
             "scene_lunch": {
                 bg: "images/school2.jpg", 
                 characterImg: null, 
+                audio: "bgm-hall", // Reuse Hall ambience
                 text: `The bell rings for noon. The "Boarders" line up for the dining hall. As an "Extern," you are stopped at the door. "Day scholars outside," the supervisor barks.\n\nYou sit on the cold steps. Your lunch from home is frozen solid. Inside, you see the others eating hot soup. You are physically here, but entirely separate.`,
                 effects: { hunger: 10, warmth: -10, spirit: -5 },
                 specialAction: "returnToMap"
@@ -663,6 +693,7 @@
             "scene_work": {
                 bg: "images/school2.jpg",
                 characterImg: "images/nun.jpg",
+                audio: "bgm-class", // Reuse quiet sound
                 text: "[DYNAMIC_TEXT]", 
                 effects: { hunger: 20, spirit: -15, warmth: 0 },
                 nextScene: "end_of_day"
@@ -670,6 +701,7 @@
             "end_of_day": {
                 bg: "images/road.JPG",
                 characterImg: null, 
+                audio: "bgm-wind",
                 text: `The final bell rings. The day is over. While the Boarders retreat to their dorms, you are pushed back out into the cold evening air.\n\nYou survived another day. But you have to do it all again tomorrow.`,
                 promptLabel: "End of Demo",
                 choices: [
@@ -677,6 +709,43 @@
                 ]
             }
         };
+
+        // --- AUDIO ENGINE ---
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            document.querySelectorAll('audio').forEach(a => a.muted = state.isMuted);
+            document.getElementById('audio-btn').innerText = state.isMuted ? "🔊 Audio: OFF" : "🔊 Audio: ON";
+        }
+
+        function playAudio(trackId) {
+            if (!trackId) return;
+            
+            // If already playing this track, do nothing (smooth transition)
+            if (state.currentTrack === trackId) return;
+
+            // Stop all audio
+            document.querySelectorAll('audio').forEach(a => {
+                a.pause();
+                a.currentTime = 0;
+            });
+
+            // Play new
+            const newTrack = document.getElementById(trackId);
+            if (newTrack) {
+                newTrack.volume = 0.5; // Default volume
+                newTrack.play().catch(e => console.log("Audio waiting for interaction"));
+                state.currentTrack = trackId;
+            }
+        }
+
+        function playSFX(sfxId) {
+            if (state.isMuted) return;
+            const sound = document.getElementById(sfxId);
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play();
+            }
+        }
 
         // --- FUNCTIONS ---
 
@@ -732,7 +801,7 @@
         }
 
         function showScene(sceneId) {
-            // GENDER REDIRECT for Hallway
+            // GENDER REDIRECT
             if (sceneId === "checkGenderHallway") {
                 if (state.gender === 'female') showScene("scene_hallway_girl_1");
                 else showScene("scene_hallway_boy_1");
@@ -758,6 +827,10 @@
                     scene.text = "It is time for the 'Half-Day' work. For boys, this means farming, wood-chopping, and stock raising. You haul heavy logs in the cold until your muscles burn, unpaid and unthanked.";
                 }
             }
+
+            // AUDIO HANDLING
+            if (scene.audio) playAudio(scene.audio);
+            if (scene.sfx) playSFX(scene.sfx);
 
             // CHARACTER SWAP
             const charImg = document.getElementById('character-sprite');
@@ -804,8 +877,19 @@
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.innerText = choice.text;
-                if (choice.action === "exitGame") { btn.onclick = () => window.location.href = 'index.html'; } 
-                else { btn.onclick = () => makeChoice(choice); }
+                if (choice.action === "exitGame") { 
+                    btn.onclick = () => window.location.href = 'index.html'; 
+                } 
+                else if (choice.action === "startAudio") {
+                    btn.onclick = () => {
+                        // Start audio context on user gesture
+                        playAudio("bgm-wind");
+                        makeChoice(choice);
+                    };
+                }
+                else { 
+                    btn.onclick = () => makeChoice(choice); 
+                }
                 container.appendChild(btn);
             });
             overlay.style.display = 'flex';
@@ -880,7 +964,7 @@
 
         function renderNotebook() {
             const contentDiv = document.getElementById('notebook-content');
-            contentDiv.innerHTML = ""; // Clear old
+            contentDiv.innerHTML = ""; 
 
             if (state.unlockedTerms.length === 0) {
                 contentDiv.innerHTML = '<p style="text-align:center; font-style:italic;">No entries yet.</p>';
