@@ -30,15 +30,15 @@
             transition: opacity 0.5s ease-in-out;
         }
 
-        /* 2. TOP UI (STATS & TIME) */
-        .stats-container {
+        /* 2. TOP UI (STATS, TIME, NOTEBOOK) */
+        .top-ui-container {
             position: absolute;
             top: 20px; right: 20px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
-            z-index: 10;
+            z-index: 15; /* Above everything */
         }
 
         .stats-bar {
@@ -68,10 +68,69 @@
             border: 1px solid #777;
         }
 
+        /* NOTEBOOK BUTTON */
+        #notebook-btn {
+            background: #8B4513; /* SaddleBrown */
+            color: #fff;
+            border: 2px solid #D2691E;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: serif;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+        #notebook-btn:hover { transform: scale(1.05); background: #A0522D; }
+        
+        /* NOTEBOOK MODAL (HIDDEN) */
+        #notebook-modal {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; max-width: 600px;
+            height: 70vh;
+            background-color: #FDF5E6; /* Old Lace */
+            color: #333;
+            border: 10px solid #5D4037;
+            border-radius: 5px;
+            z-index: 50;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow-y: auto;
+            font-family: 'Times New Roman', serif;
+        }
+
+        #notebook-modal h2 {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .notebook-entry {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+        .notebook-term { font-weight: bold; font-size: 1.2rem; color: #8B0000; }
+        .notebook-def { font-size: 1rem; line-height: 1.5; }
+
+        #close-notebook {
+            position: absolute;
+            top: 10px; right: 15px;
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer; color: #333;
+        }
+
         /* 3. NOTIFICATIONS */
         #stat-notification {
             position: absolute;
-            top: 110px; 
+            top: 200px; /* Moved down to avoid notebook btn */
             right: 30px;
             text-align: right;
             font-family: sans-serif;
@@ -134,6 +193,15 @@
             white-space: pre-wrap;
             overflow-y: auto; 
             padding-right: 15px; 
+        }
+
+        #story-text::-webkit-scrollbar { width: 10px; }
+        #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 5px; }
+        #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 5px; border: 2px solid rgba(0,0,0,0.9); }
+
+        @media (max-height: 800px) {
+            #story-text { font-size: 1.1rem; }
+            #character-sprite { height: 80vh; }
         }
 
         .continue-prompt {
@@ -287,16 +355,25 @@
         <button class="map-btn" id="btn-work" onclick="triggerMapScene('scene_work', 4)">School Labor (4h)</button>
     </div>
 
-    <div class="stats-container" id="statsContainer" style="display:none;">
+    <div class="top-ui-container" id="statsContainer" style="display:none;">
         <div class="stats-bar">
             <span>Hunger: <span id="hunger-stat" class="stat-value">50%</span></span>
             <span>Warmth: <span id="warmth-stat" class="stat-value">100%</span></span>
             <span>Spirit: <span id="spirit-stat" class="stat-value">100%</span></span>
         </div>
         <div class="time-display" id="timeDisplay">8:00 AM</div>
+        <button id="notebook-btn" onclick="toggleNotebook()">📖 Historical Notebook</button>
     </div>
     
     <div id="stat-notification"></div>
+
+    <div id="notebook-modal">
+        <button id="close-notebook" onclick="toggleNotebook()">×</button>
+        <h2>Historical Terms</h2>
+        <div id="notebook-content">
+            <p style="text-align:center; font-style:italic;">No entries yet. Play the game to unlock definitions.</p>
+        </div>
+    </div>
 
     <div id="dialogue-container">
         <img id="character-sprite" src="" alt="Character">
@@ -339,7 +416,8 @@
             inTimeSkip: false,
             visitedScenes: [], 
             mapActive: false,
-            lunchEaten: false
+            lunchEaten: false,
+            unlockedTerms: [] // Track unlocked definitions
         };
 
         const typeSpeed = 25; 
@@ -351,13 +429,36 @@
         if (state.gender === 'female') playerImage = 'images/girl.png';
         charImgElement.src = playerImage;
 
-        // Check required images including class.jpg and hallway.jpg
-        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.png', 'images/boy.png', 'images/girl.png', 'images/class.jpg', 'images/hallway.jpg'];
+        const requiredImages = ['images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 'images/nun.jpg', 'images/boy.png', 'images/girl.png', 'images/class.jpg', 'images/hallway.jpg'];
         requiredImages.forEach(src => {
             const img = new Image();
             img.src = src;
             img.onerror = () => console.warn("Missing file: " + src);
         });
+
+        // --- NOTEBOOK DATA ---
+        const notebookDB = {
+            "road_allowance": {
+                term: "Road Allowance",
+                def: "Strips of Crown land reserved for potential road construction. Many Métis families, displaced from their homelands and denied land scrip, built shacks on these strips as they had nowhere else to legally live."
+            },
+            "squatter": {
+                term: "Squatters",
+                def: "A derogatory term used by the government to describe Métis families living on Crown land. This label was used to justify denying them services, education, and permanent housing."
+            },
+            "extern": {
+                term: "Extern / Day Scholar",
+                def: "A term for students who attended residential schools during the day but went home at night. Métis students were often classified as externs to save federal money, but they were still subjected to the school's abuse and cultural erasure."
+            },
+            "michif": {
+                term: "Michif",
+                def: "The language of the Métis people, blending Cree verbs with French nouns. Residential schools actively suppressed this language, punishing students who spoke it to force assimilation."
+            },
+            "lateral_violence": {
+                term: "Lateral Violence",
+                def: "When oppressed groups direct anger and violence toward each other rather than the oppressor. In schools, this manifested as conflict between First Nations and Métis students, fueled by the government's 'divide and conquer' classification systems."
+            }
+        };
 
         // --- INTRO TEXT ---
         const introSequence = [
@@ -380,7 +481,8 @@
             "start_part1": {
                 bg: "images/road.JPG", 
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters".`,
-                nextScene: "start_part2" 
+                nextScene: "start_part2",
+                unlocks: ["road_allowance", "squatter"] // UNLOCKS ADDED HERE
             },
             "start_part2": {
                 bg: "images/road.JPG", 
@@ -400,7 +502,8 @@
             "walk_cold": { 
                 bg: "images/road.JPG", 
                 text: `Three miles. It feels longer when the wind cuts right through this coat. Momma fixed it up best she could but the noticeable holes in the fabric make it hard not to freeze.\n\nI keep my head down, watching my boots sink into the snow, trying to ignore the sting in my ears. I’m an "extern," that’s what they call us. Not a boarder, not fully part of the school, just someone walking in from the bush.`,
-                nextScene: "walk_identity" 
+                nextScene: "walk_identity",
+                unlocks: ["extern"] // UNLOCK ADDED
             },
             "walk_identity": { 
                 bg: "images/road.JPG", 
@@ -435,19 +538,19 @@
             },
             "school_entry": { 
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png", 
+                characterImg: "images/nun.jpg", 
                 text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.", 
                 nextScene: "nun_dialogue_1"
             },
             "nun_dialogue_1": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet. You're lucky we let you in at all.`,
                 nextScene: "nun_dialogue_2"
             },
             "nun_dialogue_2": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
@@ -461,13 +564,14 @@
             },
             "scene_class_language": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `I heard speaking in the hallway earlier. I heard that... dialect. You know the rules. English is the language of this school. If I hear that 'Michif' or Cree gibberish again, you will be punished. Do not think because you are older now that the rules have changed. You will speak proper English, or you will not speak at all. Some of you seem determined to remain 'externs,' outsiders to civilization, no matter how hard we try to save you.`,
-                nextScene: "scene_class_yvonne"
+                nextScene: "scene_class_yvonne",
+                unlocks: ["michif"] // UNLOCK ADDED
             },
             "scene_class_yvonne": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `Let's hope we do not have another Yvonne incident... *she violently points to her ruler* young lady do you want to tell the new students what happened when you used your forbidden nonsense?`,
                 nextScene: "scene_class_silence"
             },
@@ -479,31 +583,31 @@
             },
             "scene_class_scrutiny": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `(She stands stiffly at the front of the room, her eyes scanning the students before landing on you. She notes the dust on your clothes from the road allowance.)`,
                 nextScene: "scene_class_posture"
             },
             "scene_class_posture": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `That's what I thought. We will be continuing our history lesson today. Sit up straight. You must learn to hold yourselves with dignity, not slouched over like you are sitting around a campfire. We are here to prepare you for the modern world, to make you useful citizens, not to encourage the savage ways your family taught you.`,
                 nextScene: "scene_class_history"
             },
             "scene_class_history": {
                 bg: "images/class.jpg", 
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: `Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here. It is only through the grace of God and the discipline of the Church that you are receiving an education at all. Your parents... well, they do not understand the value of what we are giving you here. If it were up to them, you would be running wild in the bush. *mutters to herself* for some of you maybe running off to your inevitable end.`,
                 effects: { spirit: -10, hunger: 5, warmth: 20 },
                 specialAction: "returnToMap"
             },
 
-            // --- HALLWAY SEQUENCE (UPDATED) ---
+            // --- HALLWAY SEQUENCE ---
             "scene_hallway_start": {
                 bg: "images/hallway.jpg",
-                characterImg: null, // Just atmosphere
+                characterImg: null, 
                 text: `The hallway smells of floor wax and old cabbage. You try to move quickly to your next task, keeping your head down to avoid attention. But the narrow corridor makes it impossible to hide.`,
-                // SPECIAL CHECK FOR GENDER
-                specialAction: "checkGenderHallway"
+                specialAction: "checkGenderHallway",
+                unlocks: ["lateral_violence"] // UNLOCK ADDED
             },
 
             // GIRL BRANCH
@@ -558,7 +662,7 @@
             },
             "scene_work": {
                 bg: "images/school2.jpg",
-                characterImg: "images/nun.png",
+                characterImg: "images/nun.jpg",
                 text: "[DYNAMIC_TEXT]", 
                 effects: { hunger: 20, spirit: -15, warmth: 0 },
                 nextScene: "end_of_day"
@@ -641,6 +745,11 @@
             state.currentScene = scene; 
             state.waitingForInput = false; 
 
+            // NOTEBOOK UNLOCK
+            if (scene.unlocks) {
+                scene.unlocks.forEach(termId => unlockTerm(termId));
+            }
+
             // DYNAMIC WORK TEXT
             if (sceneId === "scene_work") {
                 if (state.gender === 'female') {
@@ -704,18 +813,24 @@
 
         function showNotification(changes) {
             let messages = [];
-            if (changes.hunger) {
-                if (changes.hunger > 0) messages.push(`<span style="color:#ff6b6b">Hunger increased by ${changes.hunger}%</span>`);
-                else messages.push(`<span style="color:#51cf66">Hunger reduced by ${Math.abs(changes.hunger)}%</span>`);
+            // Handle Stats
+            if (changes && changes.hunger) {
+                if (changes.hunger > 0) messages.push(`<span style="color:#ff6b6b">Hunger +${changes.hunger}%</span>`);
+                else messages.push(`<span style="color:#51cf66">Hunger -${Math.abs(changes.hunger)}%</span>`);
             }
-            if (changes.warmth) {
-                if (changes.warmth < 0) messages.push(`<span style="color:#ff6b6b">Lost ${Math.abs(changes.warmth)}% Warmth</span>`);
-                else messages.push(`<span style="color:#51cf66">Gained ${changes.warmth}% Warmth</span>`);
+            if (changes && changes.warmth) {
+                if (changes.warmth < 0) messages.push(`<span style="color:#ff6b6b">Warmth -${Math.abs(changes.warmth)}%</span>`);
+                else messages.push(`<span style="color:#51cf66">Warmth +${changes.warmth}%</span>`);
             }
-            if (changes.spirit) {
-                 if (changes.spirit < 0) messages.push(`<span style="color:#ff6b6b">Lost ${Math.abs(changes.spirit)}% Spirit</span>`);
-                 else messages.push(`<span style="color:#51cf66">Gained ${changes.spirit}% Spirit</span>`);
+            if (changes && changes.spirit) {
+                 if (changes.spirit < 0) messages.push(`<span style="color:#ff6b6b">Spirit -${Math.abs(changes.spirit)}%</span>`);
+                 else messages.push(`<span style="color:#51cf66">Spirit +${changes.spirit}%</span>`);
             }
+            // Handle Special Message (Notebook)
+            if (typeof changes === "string") {
+                messages.push(`<span style="color:#FFD700">📖 ${changes}</span>`);
+            }
+
             if (messages.length > 0) {
                 const note = document.getElementById('stat-notification');
                 note.innerHTML = messages.join("<br>");
@@ -742,6 +857,43 @@
             }
             if (choice.effects) applyStats(choice.effects);
             showScene(choice.nextScene);
+        }
+
+        // --- NOTEBOOK FUNCTIONS ---
+        function toggleNotebook() {
+            const modal = document.getElementById('notebook-modal');
+            if (modal.style.display === 'block') {
+                modal.style.display = 'none';
+            } else {
+                renderNotebook();
+                modal.style.display = 'block';
+            }
+        }
+
+        function unlockTerm(termId) {
+            if (!state.unlockedTerms.includes(termId)) {
+                state.unlockedTerms.push(termId);
+                const termName = notebookDB[termId].term;
+                showNotification("Notebook Updated: " + termName);
+            }
+        }
+
+        function renderNotebook() {
+            const contentDiv = document.getElementById('notebook-content');
+            contentDiv.innerHTML = ""; // Clear old
+
+            if (state.unlockedTerms.length === 0) {
+                contentDiv.innerHTML = '<p style="text-align:center; font-style:italic;">No entries yet.</p>';
+                return;
+            }
+
+            state.unlockedTerms.forEach(termId => {
+                const entry = notebookDB[termId];
+                const div = document.createElement('div');
+                div.className = 'notebook-entry';
+                div.innerHTML = `<div class="notebook-term">${entry.term}</div><div class="notebook-def">${entry.def}</div>`;
+                contentDiv.appendChild(div);
+            });
         }
 
         function updateTimeDisplay() {
