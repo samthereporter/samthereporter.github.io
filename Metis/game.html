@@ -22,6 +22,8 @@
         /* =========================================
            2. VISUAL LAYERS
            ========================================= */
+        
+        /* LAYER 1: Background */
         #bg-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #222; 
@@ -30,24 +32,36 @@
             z-index: 1; transition: opacity 0.5s ease-in-out;
         }
 
+        /* LAYER 2: Character Sprite */
         #character-sprite {
             position: absolute; bottom: 0; left: 5%; height: 85vh; width: auto;
-            z-index: 5; pointer-events: none;
+            z-index: 5; /* Low Z-index */
+            pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
             opacity: 0.95; transition: opacity 0.3s ease-in-out;
+        }
+
+        /* LAYER 3: Cinematic Bottom Gradient (New!) */
+        #bottom-gradient {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 40vh;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0) 100%);
+            z-index: 6; /* Sits ON TOP of sprite, BEHIND text */
+            pointer-events: none;
         }
 
         /* =========================================
            3. UI: TEXT BOX & NAME TAG
            ========================================= */
+        
+        /* LAYER 4: Dialogue Container */
         #dialogue-container {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; 
-            z-index: 5; pointer-events: none;
+            z-index: 10; /* High Z-index */
+            pointer-events: none;
         }
 
-        /* The Visual Novel Style Text Box */
         .text-box-wrapper {
-            position: absolute; bottom: 60px; /* Space for control bar */
+            position: absolute; bottom: 70px; /* Raised to make room for controls */
             left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 1200px;
             pointer-events: auto;
@@ -60,23 +74,22 @@
             padding: 5px 25px;
             font-family: sans-serif; font-weight: bold; font-size: 1.2rem;
             border-radius: 10px 10px 0 0;
-            border: 2px solid #aaa;
-            border-bottom: none;
+            border: 2px solid #aaa; border-bottom: none;
             margin-left: 20px;
             min-width: 150px; text-align: center;
-            visibility: hidden; /* Hidden by default */
+            visibility: hidden;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
         }
 
         .text-box-bg {
             height: 25vh;
             background: linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(40,40,40,0.9) 100%);
             border: 2px solid #aaa;
-            border-radius: 10px;
-            border-top-left-radius: 0; /* Connects to nametag */
+            border-radius: 10px; border-top-left-radius: 0;
             padding: 25px 35px; 
             color: #fff;
             display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
 
         #story-text {
@@ -86,7 +99,6 @@
             text-shadow: 1px 1px 2px #000;
         }
 
-        /* Scrollbar Styling */
         #story-text::-webkit-scrollbar { width: 8px; }
         #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
         #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 4px; }
@@ -99,7 +111,7 @@
         @keyframes blink { 50% { opacity: 0; } }
 
         /* =========================================
-           4. UI: TOP BAR (Stats, Time, Notebook)
+           4. UI: TOP BAR
            ========================================= */
         .top-ui-container {
             position: absolute; top: 20px; right: 20px;
@@ -139,26 +151,27 @@
         input[type=range] { width: 100px; accent-color: #FFD700; }
 
         /* =========================================
-           5. UI: BOTTOM CONTROL BAR (VN Style)
+           5. UI: BOTTOM CONTROL BAR
            ========================================= */
         .control-bar {
-            position: absolute; bottom: 10px; right: 5%;
-            z-index: 20; display: flex; gap: 15px;
+            position: absolute; bottom: 15px; right: 5%;
+            z-index: 20; display: flex; gap: 20px;
         }
         .control-item {
-            background: none; border: none; color: #aaa;
-            font-family: sans-serif; font-size: 0.9rem; font-weight: bold;
+            background: none; border: none; 
+            color: #ccc; /* Brighter for visibility */
+            font-family: sans-serif; font-size: 1rem; font-weight: bold;
             text-transform: uppercase; cursor: pointer;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            text-shadow: 0 2px 4px #000; /* Drop shadow for readability */
         }
-        .control-item:hover { color: #fff; text-shadow: 0 0 5px #fff; }
+        .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 8px #fff; }
         .control-item.active { color: #FFD700; }
 
         /* =========================================
            6. OVERLAYS & MODALS
            ========================================= */
         
-        /* Map */
         #map-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('images/school.jpg'); background-size: cover;
@@ -177,10 +190,9 @@
         #btn-hallway { top: 30%; right: 20%; }
         #btn-work { bottom: 30%; left: 50%; transform: translateX(-50%); }
 
-        /* Choices */
         #choices-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); z-index: 20; display: none;
+            background: rgba(0,0,0,0.92); z-index: 30; display: none;
             justify-content: center; align-items: center; flex-direction: column; gap: 20px;
         }
         .choice-btn {
@@ -189,9 +201,8 @@
             border-radius: 5px; transition: transform 0.2s;
         }
         .choice-btn:hover { background: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
-        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.5rem; }
+        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.5rem; text-align: center; }
 
-        /* Notebook & Log Modals (Shared Style) */
         .modal-overlay {
             display: none; position: absolute; top: 50%; left: 50%; 
             transform: translate(-50%, -50%); width: 80%; max-width: 700px; height: 75vh;
@@ -203,20 +214,18 @@
         .modal-entry { margin-bottom: 15px; border-bottom: 1px dashed #999; padding-bottom: 10px; }
         .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px;}
         
-        /* Time Skip */
         #time-skip-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 30; display: flex; justify-content: center; align-items: center;
+            background: #000; z-index: 40; display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 1.5s;
         }
         #time-skip-text { color: white; font-size: 3rem; font-family: serif; }
         .overlay-active { opacity: 1 !important; pointer-events: auto !important; }
 
-        /* Notification */
         #stat-notification {
             position: absolute; top: 300px; right: 30px; text-align: right;
             font-family: sans-serif; font-weight: bold; color: #fff; z-index: 16;
-            opacity: 0; transition: opacity 0.5s;
+            opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 4px #000;
         }
 
     </style>
@@ -229,8 +238,8 @@
     <audio id="sfx-bell"><source src="images/bell.mp3" type="audio/mpeg"></audio>
 
     <div id="bg-layer"></div>
-
-    <div id="map-layer">
+    <div id="character-sprite"><img src="" style="height:100%; width:auto;" id="char-img-tag" alt=""></div>
+    <div id="bottom-gradient"></div> <div id="map-layer">
         <h1 class="map-title">Schedule</h1>
         <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
         <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway_start', 1)">Hallway (1h)</button>
@@ -255,7 +264,6 @@
     <div id="stat-notification"></div>
 
     <div id="dialogue-container">
-        <img id="character-sprite" src="" alt="Character">
         
         <div class="text-box-wrapper">
             <div id="name-tag" class="name-tag">Sister of Charity</div>
@@ -309,8 +317,8 @@
             waitingForInput: false, inTimeSkip: false, mapActive: false,
             
             // Features
-            historyStack: [], // Array of SceneIDs for "Back" button
-            dialogueLog: [],  // Array of objects {speaker, text}
+            historyStack: [], 
+            dialogueLog: [],  
             unlockedTerms: [],
             
             // Modes
@@ -326,9 +334,10 @@
         let typeSpeed = 25;
 
         // --- 2. ASSETS ---
-        const charImgElement = document.getElementById('character-sprite');
+        // Using explicit image tag inside div for better control
+        const charImgTag = document.getElementById('char-img-tag');
         let playerImage = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
-        charImgElement.src = playerImage;
+        charImgTag.src = playerImage;
 
         // --- 3. DATA: NOTEBOOK ---
         const notebookDB = {
@@ -578,8 +587,7 @@
                 typeWriter(introSequence[state.introIndex], 'story-text');
             } else {
                 state.inIntro = false;
-                document.getElementById('statsContainer').style.display = 'flex';
-                document.getElementById('controlBar').style.display = 'flex'; // Show VN controls
+                // Wait for player to click yes to show UI
                 showScene("ready_check");
             }
         }
@@ -590,7 +598,7 @@
                 return;
             }
 
-            // Save history for Back button (push CURRENT scene before moving to NEW one)
+            // Save history for Back button
             if (state.currentSceneId && state.currentSceneId !== sceneId) {
                 state.historyStack.push(state.currentSceneId);
             }
@@ -613,12 +621,16 @@
             if (scene.sfx) playSFX(scene.sfx);
 
             // Images
-            const charImg = document.getElementById('character-sprite');
-            if (scene.characterImg === null) charImg.style.opacity = 0;
+            const charImgTag = document.getElementById('char-img-tag');
+            const charImgDiv = document.getElementById('character-sprite');
+            if (scene.characterImg === null) charImgDiv.style.opacity = 0;
             else {
                 let img = scene.characterImg || (state.gender === 'female' ? 'images/girl.png' : 'images/boy.png');
-                if (!charImg.src.includes(img)) { charImg.style.opacity = 0; setTimeout(() => { charImg.src = img; charImg.style.opacity = 0.95; }, 200); }
-                else charImg.style.opacity = 0.95;
+                if (!charImgTag.src.includes(img)) { 
+                    charImgDiv.style.opacity = 0; 
+                    setTimeout(() => { charImgTag.src = img; charImgDiv.style.opacity = 0.95; }, 200); 
+                }
+                else charImgDiv.style.opacity = 0.95;
             }
 
             if (scene.bg) document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
@@ -638,7 +650,8 @@
             addToLog(scene.speaker, processedText);
 
             typeWriter(processedText, 'story-text');
-            checkStats();
+            // Check stats ONLY if we are not in intro/game over
+            if (!state.inIntro && !sceneId.includes("game_over")) checkStats();
         }
 
         function presentChoices(scene) {
@@ -653,7 +666,13 @@
                 btn.className = 'choice-btn';
                 btn.innerText = c.text;
                 if (c.action === "exitGame") btn.onclick = () => location.reload();
-                else if (c.action === "startAudio") btn.onclick = () => { playAudio("bgm-wind"); makeChoice(c); };
+                else if (c.action === "startAudio") btn.onclick = () => { 
+                    // SHOW UI NOW
+                    document.getElementById('statsContainer').style.display = 'flex';
+                    document.getElementById('controlBar').style.display = 'flex';
+                    playAudio("bgm-wind"); 
+                    makeChoice(c); 
+                };
                 else btn.onclick = () => makeChoice(c); 
                 container.appendChild(btn);
             });
@@ -693,12 +712,11 @@
             else if (state.spirit <= 0) showScene("game_over_spirit");
         }
 
-        // --- CONTROLS: BACK, AUTO, SKIP, LOG ---
+        // --- CONTROLS ---
         
         function goBack() {
             if (state.historyStack.length > 0) {
                 const prevScene = state.historyStack.pop();
-                // Prevent creating a loop by popping the current scene off stack if pushed
                 state.currentSceneId = null; // Force reload
                 showScene(prevScene);
             }
@@ -706,7 +724,7 @@
 
         function toggleAuto() {
             state.isAuto = !state.isAuto;
-            state.isSkip = false; // Disable skip if Auto on
+            state.isSkip = false; 
             document.getElementById('btn-auto').classList.toggle('active');
             document.getElementById('btn-skip').classList.remove('active');
             if (state.isAuto && !state.isTyping) advanceGlobal({target:{tagName:'BODY'}});
@@ -730,16 +748,11 @@
         }
 
         function toggleLog() {
-            const modal = document.getElementById('log-modal');
+            toggleModal('log-modal');
             const content = document.getElementById('log-content');
-            if (modal.style.display === 'block') {
-                modal.style.display = 'none';
-            } else {
-                content.innerHTML = state.dialogueLog.map(e => 
-                    `<div class="modal-entry"><span class="log-speaker">${e.speaker}</span>${e.text}</div>`
-                ).join('');
-                modal.style.display = 'block';
-            }
+            content.innerHTML = state.dialogueLog.map(e => 
+                `<div class="modal-entry"><span class="log-speaker">${e.speaker}</span>${e.text}</div>`
+            ).join('');
         }
 
         // --- MAP & TIME ---
@@ -770,7 +783,7 @@
             document.getElementById('spirit-stat').innerText = state.spirit + "%";
         }
 
-        // --- UTILS: AUDIO & NOTEBOOK ---
+        // --- UTILS ---
         function setVolume(val) { document.querySelectorAll('audio').forEach(a => a.volume = val); }
         function toggleMute() {
             state.isMuted = !state.isMuted;
@@ -799,7 +812,7 @@
         function unlockTerm(id) {
             if(!state.unlockedTerms.includes(id)) {
                 state.unlockedTerms.push(id);
-                showNotification("Notebook Updated");
+                // Optional: Show notification
             }
         }
         function renderNotebook() {
@@ -818,7 +831,6 @@
             // Scene Navigation Logic
             const sc = state.currentScene;
             if (sc.specialAction === "triggerTimeSkip") { 
-                // Time Skip Logic (Simplified here)
                 state.waitingForInput = false;
                 document.getElementById('dialogue-container').style.opacity = 0;
                 document.getElementById('time-skip-overlay').classList.add('overlay-active');
@@ -847,12 +859,10 @@
                 }
             }
             else if (sc.specialAction === "returnToMap") {
-                // Lunch Check
                 if (state.time >= 12 && !state.lunchEaten) {
                     state.lunchEaten = true; state.time = 12; updateTimeDisplay();
                     showScene("scene_lunch");
                 } else {
-                    // Re-trigger map logic
                     sc.specialAction = "triggerMap"; advanceGlobal(e);
                 }
             }
@@ -864,7 +874,7 @@
         document.body.addEventListener('click', advanceGlobal);
         document.body.addEventListener('keydown', (e) => { 
             if (e.code === 'Space') advanceGlobal(e);
-            if (e.key === 'Control') toggleSkip(); // Ctrl for Skip
+            if (e.key === 'Control') toggleSkip(); 
         });
         typeWriter(introSequence[0], 'story-text');
 
