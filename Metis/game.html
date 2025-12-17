@@ -3,464 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Métis Residential School Simulation</title>
+    <title>Simulation</title>
     <style>
-        /* ==========================================================================
-           1. GLOBAL RESET & BASE STYLES
-           ========================================================================== */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+        /* =========================================
+           1. GLOBAL & RESET
+           ========================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: #000;
             height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* Prevents scrollbars on the main window */
+            overflow: hidden; 
             font-family: 'Georgia', serif;
             color: white;
-            user-select: none; /* Prevents user from highlighting text UI */
+            user-select: none;
         }
 
-        /* ==========================================================================
-           2. VISUAL LAYERS (Z-INDEX STACKING ORDER)
-           ========================================================================== */
+        /* =========================================
+           2. VISUAL LAYERS
+           ========================================= */
         
-        /* LAYER 1: Background Image */
-        /* This layer handles the scene transitions (fading images) */
+        /* LAYER 1: Background */
         #bg-layer {
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background-color: #222; /* Fallback color if image fails */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #222; 
             background-image: url('images/school.jpg'); 
-            background-size: cover; 
-            background-position: center;
-            z-index: 1; 
-            transition: opacity 0.5s ease-in-out;
+            background-size: cover; background-position: center;
+            z-index: 1; transition: opacity 0.5s ease-in-out;
         }
 
         /* LAYER 2: Character Sprite */
-        /* Holds the images for the Student, Nun, or other characters */
         #character-sprite {
-            position: absolute; 
-            bottom: 0; 
-            left: 5%; 
-            height: 85vh; /* Takes up 85% of screen height */
-            width: auto;
+            position: absolute; bottom: 0; left: 5%; height: 85vh; width: auto;
             z-index: 5; 
-            pointer-events: none; /* Allows clicking through the image */
+            pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
-            opacity: 0.95; 
-            transition: opacity 0.3s ease-in-out;
+            opacity: 0.95; transition: opacity 0.3s ease-in-out;
         }
 
         /* LAYER 3: Cinematic Bottom Gradient */
-        /* Adds a dark fade to the bottom to make white text/buttons readable */
         #bottom-gradient {
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 50vh; /* Fades up halfway through the screen */
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50vh;
             background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0) 100%);
             z-index: 6; 
             pointer-events: none;
         }
 
-        /* ==========================================================================
+        /* =========================================
            3. UI: TEXT BOX & NAME TAG
-           ========================================================================== */
+           ========================================= */
         
-        /* Container for the text area */
         #dialogue-container {
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100vh; 
-            z-index: 10; 
-            pointer-events: none;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; 
+            z-index: 10; pointer-events: none;
         }
 
-        /* Wrapper to center the text box */
         .text-box-wrapper {
-            position: absolute; 
-            bottom: 70px; /* Raised to make room for bottom control bar */
-            left: 50%; 
-            transform: translateX(-50%);
-            width: 90%; 
-            max-width: 1200px;
-            pointer-events: auto; /* Re-enable clicks for the text box */
+            position: absolute; bottom: 70px; 
+            left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 1200px;
+            pointer-events: auto;
         }
 
-        /* The Name Tag above the text box */
         .name-tag {
             display: inline-block;
-            background: linear-gradient(90deg, #8B4513, #5D4037); /* Wood/Leather tone */
-            color: #FFD700; /* Gold text */
+            background: linear-gradient(90deg, #8B4513, #5D4037);
+            color: #FFD700;
             padding: 5px 25px;
-            font-family: sans-serif; 
-            font-weight: bold; 
-            font-size: 1.2rem;
+            font-family: sans-serif; font-weight: bold; font-size: 1.2rem;
             border-radius: 10px 10px 0 0;
-            border: 2px solid #aaa; 
-            border-bottom: none;
+            border: 2px solid #aaa; border-bottom: none;
             margin-left: 20px;
-            min-width: 150px; 
-            text-align: center;
-            visibility: hidden; /* Hidden by default until character speaks */
+            min-width: 150px; text-align: center;
+            visibility: hidden;
             box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
         }
 
-        /* The Main Dialogue Box */
         .text-box-bg {
-            height: 28vh; /* Fixed height for consistency */
+            height: 28vh;
             background: linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(40,40,40,0.9) 100%);
             border: 2px solid #aaa;
-            border-radius: 10px; 
-            border-top-left-radius: 0; /* Connects visually to nametag */
+            border-radius: 10px; border-top-left-radius: 0;
             padding: 25px 35px; 
             color: #fff;
-            display: flex; 
-            flex-direction: column;
+            display: flex; flex-direction: column;
             box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
 
-        /* The actual text content */
         #story-text {
-            font-size: 1.35rem; 
-            line-height: 1.6;
-            flex-grow: 1; 
-            white-space: pre-wrap; /* Preserves paragraph breaks */
-            overflow-y: auto; /* Allows scrolling if text is long */
-            padding-right: 15px;
+            font-size: 1.3rem; line-height: 1.6;
+            flex-grow: 1; white-space: pre-wrap;
+            overflow-y: auto; padding-right: 15px;
             text-shadow: 1px 1px 2px #000;
         }
 
-        /* Custom Scrollbar Styling for Text Box */
-        #story-text::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        #story-text::-webkit-scrollbar-track { 
-            background: rgba(255,255,255,0.1); 
-        }
-        #story-text::-webkit-scrollbar-thumb { 
-            background-color: #888; 
-            border-radius: 4px; 
-        }
+        #story-text::-webkit-scrollbar { width: 8px; }
+        #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
+        #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 4px; }
 
-        /* The blinking "Click to continue" arrow */
         .continue-prompt {
-            text-align: right; 
-            font-size: 0.9rem; 
-            color: #FFD700;
-            animation: blink 1.5s infinite; 
-            margin-top: 5px;
+            text-align: right; font-size: 0.9rem; color: #FFD700;
+            animation: blink 1.5s infinite; margin-top: 5px;
             visibility: hidden; 
         }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* ==========================================================================
-           4. UI: TOP BAR (Stats, Clock, Notebook)
-           ========================================================================== */
-        
+        /* =========================================
+           4. UI: TOP BAR
+           ========================================= */
         .top-ui-container {
-            position: absolute; 
-            top: 20px; 
-            right: 20px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-end;
-            gap: 12px; 
-            z-index: 15; 
+            position: absolute; top: 20px; right: 20px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 10px; z-index: 15; 
         }
 
-        /* Health/Status Bar */
         .stats-bar {
-            background: rgba(0, 0, 0, 0.85); 
-            color: #fff;
-            padding: 12px 25px; 
-            border-radius: 50px;
-            display: flex; 
-            gap: 25px; 
-            font-family: sans-serif; 
-            font-size: 1rem; 
-            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.85); color: #fff;
+            padding: 8px 20px; border-radius: 50px;
+            display: flex; gap: 20px; 
+            font-family: sans-serif; font-size: 0.9rem; text-transform: uppercase;
             border: 1px solid #555;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .stat-value { 
-            font-weight: bold; 
-            color: #FFD700; 
-        }
+        .stat-value { font-weight: bold; color: #FFD700; }
 
-        /* Digital Clock Display */
         .time-display {
-            background: rgba(0, 0, 0, 0.9); 
-            color: #eee;
-            padding: 8px 20px; 
-            border-radius: 8px;
-            font-family: 'Courier New', monospace; 
-            font-size: 1.3rem; 
-            font-weight: bold;
+            background: rgba(0, 0, 0, 0.9); color: #eee;
+            padding: 5px 15px; border-radius: 5px;
+            font-family: monospace; font-size: 1.2rem; font-weight: bold;
             border: 1px solid #777;
         }
 
-        /* General Top Buttons (Notebook, Audio) */
         .top-btn {
-            background: #444; 
-            color: #fff; 
-            border: 1px solid #777;
-            padding: 8px 15px; 
-            cursor: pointer; 
-            font-size: 0.9rem; 
-            width: 100%;
-            border-radius: 4px; 
-            transition: background 0.2s;
-            text-align: center;
+            background: #444; color: #fff; border: 1px solid #777;
+            padding: 5px 15px; cursor: pointer; font-size: 0.9rem; width: 100%;
+            border-radius: 4px; transition: background 0.2s;
         }
         .top-btn:hover { background: #666; }
-        
-        /* Special Style for Notebook Button */
-        #notebook-btn { 
-            background: #8B4513; 
-            border-color: #D2691E; 
-            font-family: serif;
-            font-weight: bold;
-        }
-        #notebook-btn:hover { background: #A0522D; }
+        #notebook-btn { background: #8B4513; border-color: #D2691E; }
 
-        /* Volume Slider Container */
         .volume-container {
-            background: rgba(0,0,0,0.8); 
-            padding: 8px 12px;
-            border-radius: 5px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
-            color: white; 
-            font-size: 0.9rem;
-            border: 1px solid #555;
+            background: rgba(0,0,0,0.8); padding: 5px 10px;
+            border-radius: 5px; display: flex; align-items: center; gap: 10px;
+            color: white; font-size: 0.8rem;
         }
-        input[type=range] { 
-            width: 100px; 
-            accent-color: #FFD700; 
-            cursor: pointer;
-        }
+        input[type=range] { width: 100px; accent-color: #FFD700; }
 
-        /* ==========================================================================
-           5. UI: BOTTOM CONTROL BAR (Visual Novel Standard)
-           ========================================================================== */
+        /* =========================================
+           5. UI: BOTTOM CONTROL BAR
+           ========================================= */
         .control-bar {
-            position: absolute; 
-            bottom: 15px; 
-            right: 5%;
-            z-index: 20; 
-            display: flex; 
-            gap: 20px;
+            position: absolute; bottom: 15px; right: 5%;
+            z-index: 20; display: flex; gap: 20px;
         }
-
         .control-item {
-            background: none; 
-            border: none; 
+            background: none; border: none; 
             color: #ccc; 
-            font-family: sans-serif; 
-            font-size: 1rem; 
-            font-weight: bold;
-            text-transform: uppercase; 
-            cursor: pointer;
+            font-family: sans-serif; font-size: 1rem; font-weight: bold;
+            text-transform: uppercase; cursor: pointer;
             transition: all 0.2s;
             text-shadow: 0 2px 4px #000;
         }
-        
-        .control-item:hover { 
-            color: #fff; 
-            transform: scale(1.1); 
-            text-shadow: 0 0 8px #fff; 
-        }
-        
-        .control-item.active { 
-            color: #FFD700; /* Highlights if Auto/Skip is active */
-            border-bottom: 2px solid #FFD700;
-        }
+        .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 8px #fff; }
+        .control-item.active { color: #FFD700; }
 
-        /* ==========================================================================
+        /* =========================================
            6. OVERLAYS & MODALS
-           ========================================================================== */
+           ========================================= */
         
-        /* MAP OVERLAY */
         #map-layer {
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('images/school.jpg'); 
-            background-size: cover; 
-            background-position: center;
-            /* Grayscale filter to give it a "planning mode" feel */
-            filter: grayscale(100%) contrast(120%) brightness(40%); 
-            z-index: 25; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('images/school.jpg'); background-size: cover;
+            filter: grayscale(100%) contrast(120%) brightness(40%); z-index: 25; 
             display: none; 
         }
-
-        .map-title { 
-            position: absolute; 
-            top: 10%; width: 100%; 
-            text-align: center; 
-            font-size: 3rem; 
-            color: #eee; 
-            text-transform: uppercase; 
-            letter-spacing: 5px; 
-            text-shadow: 0 0 15px #000;
-        }
-
+        .map-title { position: absolute; top: 10%; width: 100%; text-align: center; font-size: 2.5rem; color: #eee; text-transform: uppercase; letter-spacing: 5px; }
         .map-btn {
-            position: absolute; 
-            background: #222; 
-            color: #ddd; 
-            border: 2px solid #555;
-            padding: 15px 30px; 
-            font-family: monospace; 
-            font-weight: bold; 
-            text-transform: uppercase;
-            cursor: pointer; 
-            width: 240px; 
-            transition: transform 0.2s;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            position: absolute; background: #222; color: #ddd; border: 2px solid #555;
+            padding: 15px 25px; font-family: monospace; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; width: 220px; transition: transform 0.2s;
         }
         .map-btn:hover { transform: scale(1.1); background: #ddd; color: #000; }
         .map-btn:disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
-        
-        /* Map Button Positioning */
         #btn-class { top: 30%; left: 20%; }
         #btn-hallway { top: 30%; right: 20%; }
         #btn-work { bottom: 30%; left: 50%; transform: translateX(-50%); }
 
-        /* CHOICES OVERLAY */
         #choices-overlay {
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); 
-            z-index: 30; 
-            display: none;
-            justify-content: center; 
-            align-items: center; 
-            flex-direction: column; 
-            gap: 25px;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 30; display: none;
+            justify-content: center; align-items: center; flex-direction: column; gap: 20px;
         }
-
         .choice-btn {
-            background: #f0f2f5; 
-            border: 2px solid #2c3e50; 
-            color: #2c3e50;
-            padding: 15px 40px; 
-            font-size: 1.2rem; 
-            cursor: pointer; 
-            width: 70%; 
-            max-width: 800px;
-            border-radius: 5px; 
-            transition: transform 0.2s;
+            background: #f0f2f5; border: 2px solid #2c3e50; color: #2c3e50;
+            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; width: 70%;
+            border-radius: 5px; transition: transform 0.2s;
         }
-        .choice-btn:hover { 
-            background: #2c3e50; 
-            color: white; 
-            transform: scale(1.02); 
-            border-color: #FFD700; 
-        }
-        
-        #choice-prompt-text { 
-            color: white; 
-            margin-bottom: 20px; 
-            font-size: 1.8rem; 
-            text-align: center; 
-        }
+        .choice-btn:hover { background: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
+        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.5rem; text-align: center; }
 
-        /* NOTEBOOK & LOG MODALS */
+        /* NOTEBOOK MODAL */
         .modal-overlay {
-            display: none; 
-            position: absolute; 
-            top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            width: 80%; max-width: 700px; 
-            height: 80vh;
-            background-color: #FDF5E6; /* Old Paper */
-            color: #333; 
-            border: 8px solid #5D4037;
-            border-radius: 5px; 
-            z-index: 50; 
-            padding: 40px;
+            display: none; position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); width: 80%; max-width: 700px; height: 80vh;
+            background-color: #FDF5E6; /* Paper Color */
+            color: #333; border: 8px solid #5D4037;
+            border-radius: 5px; z-index: 50; padding: 40px;
             box-shadow: 0 0 50px rgba(0,0,0,0.9); 
-            overflow-y: auto; 
-            font-family: 'Times New Roman', serif;
+            overflow-y: auto; font-family: 'Times New Roman', serif;
         }
-
-        .modal-close { 
-            position: absolute; 
-            top: 10px; right: 15px; 
-            background: none; 
-            border: none; 
-            font-size: 2.5rem; 
-            cursor: pointer; 
-            color: #5D4037;
-        }
+        .modal-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; cursor: pointer; }
+        .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px;}
         
-        .log-speaker { 
-            font-weight: bold; 
-            color: #8B0000; 
-            display: block; 
-            margin-bottom: 5px;
-            font-size: 1.1rem;
-        }
-        .modal-entry { 
-            margin-bottom: 20px; 
-            border-bottom: 1px dashed #999; 
-            padding-bottom: 10px; 
-        }
-
-        /* Notebook Specific Styling */
         .notebook-entry { 
             background: rgba(255, 255, 255, 0.6); 
-            padding: 20px; 
+            padding: 15px; 
             margin-bottom: 20px; 
-            border-left: 6px solid #8B4513; 
+            border-left: 5px solid #8B4513; 
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .notebook-term { 
-            font-weight: bold; 
-            font-size: 1.5rem; 
+            font-weight: bold; font-size: 1.4rem; 
             color: #8B0000; 
             border-bottom: 1px solid #ccc;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             padding-bottom: 5px;
         }
         .notebook-def { 
-            font-size: 1.15rem; 
-            line-height: 1.6; 
+            font-size: 1.1rem; line-height: 1.6; 
         }
 
-        /* Time Skip (Blackout Transition) */
         #time-skip-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 40; 
-            display: flex; justify-content: center; align-items: center;
+            background: #000; z-index: 40; display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 1.5s;
         }
-        #time-skip-text { 
-            color: white; font-size: 3rem; font-family: serif; letter-spacing: 2px;
-        }
+        #time-skip-text { color: white; font-size: 3rem; font-family: serif; }
         .overlay-active { opacity: 1 !important; pointer-events: auto !important; }
 
-        /* Floating Notifications */
         #stat-notification {
-            position: absolute; top: 320px; right: 30px; text-align: right;
-            font-family: sans-serif; font-weight: bold; font-size: 1.1rem;
-            color: #fff; z-index: 16;
-            opacity: 0; transition: opacity 0.5s; 
-            text-shadow: 2px 2px 4px #000;
+            position: absolute; top: 300px; right: 30px; text-align: right;
+            font-family: sans-serif; font-weight: bold; color: #fff; z-index: 16;
+            opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 4px #000;
         }
 
     </style>
@@ -473,15 +257,11 @@
     <audio id="sfx-bell"><source src="images/bell.mp3" type="audio/mpeg"></audio>
 
     <div id="bg-layer"></div>
-    
-    <div id="character-sprite">
-        <img src="" style="height:100%; width:auto;" id="char-img-tag" alt="Character">
-    </div>
-    
+    <div id="character-sprite"><img src="" style="height:100%; width:auto;" id="char-img-tag" alt=""></div>
     <div id="bottom-gradient"></div> 
 
     <div id="map-layer">
-        <h1 class="map-title">Daily Schedule</h1>
+        <h1 class="map-title">Schedule</h1>
         <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
         <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway_start', 1)">Hallway (1h)</button>
         <button class="map-btn" id="btn-work" onclick="triggerMapScene('scene_work', 4)">School Labor (4h)</button>
@@ -507,9 +287,8 @@
     <div id="dialogue-container">
         <div class="text-box-wrapper">
             <div id="name-tag" class="name-tag">Sister of Charity</div>
-            
             <div class="text-box-bg">
-                <div id="story-text">Loading simulation...</div>
+                <div id="story-text">Loading...</div>
                 <div id="continuePrompt" class="continue-prompt">▼</div>
             </div>
         </div>
@@ -526,7 +305,7 @@
         <button class="modal-close" onclick="toggleModal('notebook-modal')">×</button>
         <h2>Historical Terms</h2>
         <div id="notebook-content">
-            <p style="text-align:center;">Play to unlock historical definitions.</p>
+            <p style="text-align:center;">Play to unlock terms.</p>
         </div>
     </div>
 
@@ -547,87 +326,42 @@
 
 
     <script>
-        // --- 1. GLOBAL ERROR HANDLER ---
-        // Catches any script crashes and alerts the user
+        // --- 1. ERROR TRAP & UTILS ---
         window.onerror = function(message, source, lineno, colno, error) {
-            alert("SYSTEM ERROR:\n" + message + "\nLine: " + lineno);
+            alert("GAME ERROR:\n" + message + "\nLine: " + lineno);
         };
 
-        // --- 2. GAME STATE MANAGEMENT ---
+        // --- 2. GAME STATE ---
         let state = {
-            // Stats (0-100)
             hunger: 50, warmth: 100, spirit: 100, time: 8,
-            
-            // Identity
             name: "Student", gender: localStorage.getItem('playerGender') || "other",
-            
-            // Engine Flags
             introIndex: 0, isTyping: false, inIntro: true, currentSceneId: null,
             waitingForInput: false, inTimeSkip: false, mapActive: false,
-            
-            // Data Storage
-            historyStack: [], dialogueLog: [], unlockedTerms: [], visitedScenes: [],
-            
-            // UX Toggles
-            isAuto: false, isSkip: false, isMuted: false, currentTrack: null,
-            
-            // Logic Flags
-            lunchEaten: false
+            historyStack: [], dialogueLog: [], unlockedTerms: [],
+            isAuto: false, isSkip: false, lunchEaten: false, visitedScenes: [], 
+            isMuted: false, currentTrack: null
         };
 
         let typeTimeouts = [];
         let autoInterval = null;
         let typeSpeed = 25;
 
-        // --- 3. ASSET PREPARATION ---
+        // --- 3. ASSETS ---
         const charImgTag = document.getElementById('char-img-tag');
-        const charImgDiv = document.getElementById('character-sprite');
-        
-        // Set Default Player Image
         let playerImage = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
         charImgTag.src = playerImage;
 
-        // Image Pre-Loader (Logs warning if files missing)
-        const requiredImages = [
-            'images/school.jpg', 'images/school2.jpg', 'images/road.JPG', 
-            'images/nun.png', 'images/boy.png', 'images/girl.png', 
-            'images/class.jpg', 'images/hallway.jpg'
-        ];
-        requiredImages.forEach(src => {
-            const img = new Image();
-            img.src = src;
-            img.onerror = () => console.warn("Asset Check Failed: " + src);
-        });
-
-        // --- 4. DATA: NOTEBOOK DEFINITIONS ---
+        // --- 4. NOTEBOOK DATA ---
         const notebookDB = {
-            "half_breed": { 
-                term: "Half-Breed", 
-                def: "A historical, derogatory racial slur used to describe Métis people. It implies being 'less than' whole. This term ignores the distinct cultural and national identity of the Métis Nation." 
-            },
-            "road_allowance": { 
-                term: "Road Allowance", 
-                def: "Strips of Crown land reserved for roads. Displaced Métis families built homes here as they were denied land scrip and had nowhere else to go." 
-            },
-            "squatter": { 
-                term: "Squatters", 
-                def: "Government term for Métis families on Crown land, used to deny them services and education." 
-            },
-            "extern": { 
-                term: "Extern", 
-                def: "Day scholars who went home at night. Used to cut costs, but students still faced the school's abuse." 
-            },
-            "michif": { 
-                term: "Michif", 
-                def: "The language of the Métis (Cree verbs + French nouns). Schools violently suppressed this language." 
-            },
-            "lateral_violence": { 
-                term: "Lateral Violence", 
-                def: "Violence directed against one's peers rather than oppressors, often fueled by colonial 'divide and conquer' tactics." 
-            }
+            "half_breed": { term: "Half-Breed", def: "A historical, derogatory racial slur used to describe Métis people. It implies being 'less than' whole. This term ignores the distinct cultural and national identity of the Métis Nation." },
+            "road_allowance": { term: "Road Allowance", def: "Strips of Crown land reserved for roads. Displaced Métis families built homes here as they were denied land scrip and had nowhere else to go." },
+            "squatter": { term: "Squatters", def: "Government term for Métis families on Crown land, used to deny them services and education." },
+            "extern": { term: "Extern", def: "Day scholars who went home at night. Used to cut costs, but students still faced the school's abuse." },
+            "michif": { term: "Michif", def: "The language of the Métis (Cree verbs + French nouns). Schools violently suppressed this language." },
+            "lateral_violence": { term: "Lateral Violence", def: "Violence directed against one's peers rather than oppressors, often fueled by colonial 'divide and conquer' tactics." }
         };
 
-        // --- 5. DATA: INTRO SEQUENCE ---
+        // --- 5. DATA: INTRO ---
         const introSequence = [
             "The year is 1970. You are a 100% Indigenous person, born to two Métis parents. You live on the Road Allowance because the government refuses to recognize your family's land rights.",
             "Despite your full Indigenous heritage, the world tries to fracture you. To the government, you are a 'squatter.' To the Treaty Indians, you are not 'Indian' enough. To the white townsfolk, you are a 'half-breed.'",
@@ -635,7 +369,7 @@
             "(You must navigate a day at the Île-à-la-Crosse Residential School. Pay attention to your Spirit, Hunger, and Warmth. Survive the day.)"
         ];
 
-        // --- 6. DATA: STORY SCENES (FULL & UNABRIDGED) ---
+        // --- 6. DATA: STORY SCENES (FULL) ---
         const storyData = {
             "ready_check": {
                 speaker: "System",
@@ -645,7 +379,7 @@
                     { text: "No", action: "exitGame" }
                 ]
             },
-            // HOME SCENES
+            // HOME
             "start_part1": {
                 bg: "images/road.JPG", audio: "bgm-wind",
                 speaker: "Narrator",
@@ -662,7 +396,7 @@
                     { text: "Speak Michif.", nextScene: "walk_intro", effects: { hunger: 5, warmth: 0, spirit: 15 } }
                 ]
             },
-            // THE WALK
+            // WALK
             "walk_intro": {
                 bg: "images/road.JPG", speaker: "You",
                 text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt. Momma tried to make me look nice, but I know what they see. They see "filth."`,
@@ -678,7 +412,7 @@
                 text: `I listened to Dad argue with the Indian Agent. It’s always the same. We are too "white" for the Treaty benefits, but too "Indian" for the town schools.`,
                 nextScene: "arrival_scene" 
             },
-            // ARRIVAL & DOORS
+            // ARRIVAL
             "arrival_scene": {
                 bg: "images/school2.jpg", speaker: "You",
                 effects: { spirit: -25, hunger: 15, warmth: -50 },
@@ -698,7 +432,7 @@
                 text: `The Sisters of Charity say we clutter the halls if we come in before morning prayer. It doesn't matter that my toes are numb. I must wait.`,
                 specialAction: "triggerTimeSkip" 
             },
-            // NUN ENCOUNTER
+            // NUN ENTRY
             "school_entry": { 
                 bg: "images/school2.jpg", characterImg: "images/nun.png", audio: "bgm-hall",
                 speaker: "Narrator",
@@ -750,7 +484,7 @@
                 text: `You endure the lesson in silence. The warmth of the room is the only comfort, though the words spoken here are cold.`,
                 specialAction: "returnToMap"
             },
-            // HALLWAY SCENES
+            // HALLWAY
             "scene_hallway_start": {
                 bg: "images/hallway.jpg", characterImg: null, audio: "bgm-hall",
                 speaker: "Narrator",
@@ -769,7 +503,7 @@
             },
             "scene_hallway_girl_3": {
                 bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
-                text: `(She leans in to whisper.) "Go cry to the nuns. They are the only ones who want you here."`,
+                text: `(She leans in, lowering her voice.) "My mother told me about people like you. 'Les Petites Sauvages.' Go cry to the nuns. They are the only ones who want you here."`,
                 effects: { spirit: -15 }, specialAction: "returnToMap"
             },
             "scene_hallway_boy_1": {
@@ -822,7 +556,7 @@
             "game_over_spirit": { bg: "images/road.JPG", speaker: "System", text: "GAME OVER: Broken Spirit. You ran away.", choices: [{text:"Restart", action:"exitGame"}]}
         };
 
-        // --- 7. ENGINE FUNCTIONS ---
+        // --- 7. FUNCTIONS ---
 
         function typeWriter(text, elementId) {
             const element = document.getElementById(elementId);
@@ -878,12 +612,14 @@
                 typeWriter(introSequence[state.introIndex], 'story-text');
             } else {
                 state.inIntro = false;
-                // Wait for ready check
+                document.getElementById('statsContainer').style.display = 'flex';
+                document.getElementById('controlBar').style.display = 'flex';
                 showScene("ready_check");
             }
         }
 
         function showScene(sceneId) {
+            // Logic Redirects
             if (sceneId === "checkGenderHallway") {
                 showScene(state.gender === 'female' ? "scene_hallway_girl_1" : "scene_hallway_boy_1");
                 return;
@@ -952,13 +688,7 @@
                 btn.className = 'choice-btn';
                 btn.innerText = c.text;
                 if (c.action === "exitGame") btn.onclick = () => location.reload();
-                else if (c.action === "startAudio") btn.onclick = () => { 
-                    // Reveal UI
-                    document.getElementById('statsContainer').style.display = 'flex';
-                    document.getElementById('controlBar').style.display = 'flex';
-                    playAudio("bgm-wind"); 
-                    makeChoice(c); 
-                };
+                else if (c.action === "startAudio") btn.onclick = () => { playAudio("bgm-wind"); makeChoice(c); };
                 else btn.onclick = () => makeChoice(c); 
                 container.appendChild(btn);
             });
@@ -1121,28 +851,41 @@
 
         function advanceGlobal(e) {
             if (e.target.tagName === 'BUTTON' || state.mapActive) return;
-            if (state.inTimeSkip) return; // FIX: Prevent clicking during fade
-            
             if (state.inIntro) { playIntroNext(); return; }
-
-            if (state.isTyping) {
-                clearTypewriter();
-                document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name);
-                return;
+            if (state.isTyping) { clearTypewriter(); document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name); return; }
+            
+            const sc = state.currentScene;
+            if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
+            else if (sc.specialAction === "triggerMap") { 
+                state.mapActive = true; 
+                document.getElementById('map-layer').style.display = 'block';
+                document.getElementById('dialogue-container').style.opacity = 0;
+                
+                const btnClass = document.getElementById('btn-class');
+                const btnHall = document.getElementById('btn-hallway');
+                const btnWork = document.getElementById('btn-work');
+                btnClass.disabled = true; btnHall.disabled = true; btnWork.disabled = true;
+                
+                if (state.time < 12) {
+                    if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
+                    if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
+                } else if (state.lunchEaten) {
+                    btnWork.disabled = false;
+                }
             }
-
-            if (state.waitingForInput) {
-                const sc = state.currentScene;
-                if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
-                else if (sc.specialAction === "triggerMap") showMap();
-                else if (sc.specialAction === "returnToMap") returnToMapLogic();
-                else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
-                else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
-                else if (sc.nextScene) showScene(sc.nextScene);
+            else if (sc.specialAction === "returnToMap") {
+                if (state.time >= 12 && !state.lunchEaten) {
+                    state.lunchEaten = true; state.time = 12; updateTimeDisplay();
+                    showScene("scene_lunch");
+                } else {
+                    sc.specialAction = "triggerMap"; advanceGlobal(e);
+                }
             }
+            else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
+            else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
+            else if (sc.nextScene) { showScene(sc.nextScene); }
         }
 
-        // Init
         document.body.addEventListener('click', advanceGlobal);
         document.body.addEventListener('keydown', (e) => { 
             if (e.code === 'Space') advanceGlobal(e);
