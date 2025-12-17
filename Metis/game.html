@@ -35,17 +35,17 @@
         /* LAYER 2: Character Sprite */
         #character-sprite {
             position: absolute; bottom: 0; left: 5%; height: 85vh; width: auto;
-            z-index: 5; /* Low Z-index */
+            z-index: 5; 
             pointer-events: none;
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
             opacity: 0.95; transition: opacity 0.3s ease-in-out;
         }
 
-        /* LAYER 3: Cinematic Bottom Gradient (New!) */
+        /* LAYER 3: Cinematic Bottom Gradient */
         #bottom-gradient {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 40vh;
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0) 100%);
-            z-index: 6; /* Sits ON TOP of sprite, BEHIND text */
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 45vh;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0) 100%);
+            z-index: 6; 
             pointer-events: none;
         }
 
@@ -53,15 +53,13 @@
            3. UI: TEXT BOX & NAME TAG
            ========================================= */
         
-        /* LAYER 4: Dialogue Container */
         #dialogue-container {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; 
-            z-index: 10; /* High Z-index */
-            pointer-events: none;
+            z-index: 10; pointer-events: none;
         }
 
         .text-box-wrapper {
-            position: absolute; bottom: 70px; /* Raised to make room for controls */
+            position: absolute; bottom: 70px; 
             left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 1200px;
             pointer-events: auto;
@@ -159,11 +157,11 @@
         }
         .control-item {
             background: none; border: none; 
-            color: #ccc; /* Brighter for visibility */
+            color: #ccc; 
             font-family: sans-serif; font-size: 1rem; font-weight: bold;
             text-transform: uppercase; cursor: pointer;
             transition: all 0.2s;
-            text-shadow: 0 2px 4px #000; /* Drop shadow for readability */
+            text-shadow: 0 2px 4px #000;
         }
         .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 8px #fff; }
         .control-item.active { color: #FFD700; }
@@ -203,17 +201,39 @@
         .choice-btn:hover { background: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
         #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.5rem; text-align: center; }
 
+        /* FIXED NOTEBOOK MODAL */
         .modal-overlay {
             display: none; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); width: 80%; max-width: 700px; height: 75vh;
-            background-color: #FDF5E6; color: #333; border: 8px solid #5D4037;
+            transform: translate(-50%, -50%); width: 80%; max-width: 700px; height: 80vh;
+            background-color: #FDF5E6; /* Paper Color */
+            color: #333; border: 8px solid #5D4037;
             border-radius: 5px; z-index: 50; padding: 40px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow-y: auto; font-family: 'Times New Roman', serif;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9); 
+            overflow-y: auto; font-family: 'Times New Roman', serif;
         }
         .modal-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; cursor: pointer; }
-        .modal-entry { margin-bottom: 15px; border-bottom: 1px dashed #999; padding-bottom: 10px; }
         .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px;}
         
+        /* NOTEBOOK ENTRY STYLING */
+        .notebook-entry { 
+            background: rgba(255, 255, 255, 0.6); 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-left: 5px solid #8B4513; 
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .notebook-term { 
+            font-weight: bold; font-size: 1.4rem; 
+            color: #8B0000; 
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+        }
+        .notebook-def { 
+            font-size: 1.1rem; line-height: 1.6; 
+        }
+
         #time-skip-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 40; display: flex; justify-content: center; align-items: center;
@@ -239,7 +259,9 @@
 
     <div id="bg-layer"></div>
     <div id="character-sprite"><img src="" style="height:100%; width:auto;" id="char-img-tag" alt=""></div>
-    <div id="bottom-gradient"></div> <div id="map-layer">
+    <div id="bottom-gradient"></div> 
+
+    <div id="map-layer">
         <h1 class="map-title">Schedule</h1>
         <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
         <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway_start', 1)">Hallway (1h)</button>
@@ -264,10 +286,8 @@
     <div id="stat-notification"></div>
 
     <div id="dialogue-container">
-        
         <div class="text-box-wrapper">
             <div id="name-tag" class="name-tag">Sister of Charity</div>
-            
             <div class="text-box-bg">
                 <div id="story-text">Loading...</div>
                 <div id="continuePrompt" class="continue-prompt">▼</div>
@@ -307,39 +327,32 @@
 
 
     <script>
-        // --- 1. GAME ENGINE STATE ---
+        // --- ERROR TRAP ---
+        window.onerror = function(message, source, lineno, colno, error) {
+            alert("GAME ERROR:\n" + message + "\nLine: " + lineno);
+        };
+
+        // --- GAME STATE ---
         let state = {
             hunger: 50, warmth: 100, spirit: 100, time: 8,
             name: "Student", gender: localStorage.getItem('playerGender') || "other",
-            
-            // Engine
             introIndex: 0, isTyping: false, inIntro: true, currentSceneId: null,
             waitingForInput: false, inTimeSkip: false, mapActive: false,
-            
-            // Features
-            historyStack: [], 
-            dialogueLog: [],  
-            unlockedTerms: [],
-            
-            // Modes
+            historyStack: [], dialogueLog: [], unlockedTerms: [],
             isAuto: false, isSkip: false,
-            
-            // Logic flags
-            lunchEaten: false,
-            visitedScenes: []
+            lunchEaten: false, visitedScenes: [], isMuted: false, currentTrack: null
         };
 
         let typeTimeouts = [];
         let autoInterval = null;
         let typeSpeed = 25;
 
-        // --- 2. ASSETS ---
-        // Using explicit image tag inside div for better control
+        // --- ASSETS ---
         const charImgTag = document.getElementById('char-img-tag');
         let playerImage = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
         charImgTag.src = playerImage;
 
-        // --- 3. DATA: NOTEBOOK ---
+        // --- DATA: NOTEBOOK ---
         const notebookDB = {
             "half_breed": { term: "Half-Breed", def: "A historical, derogatory racial slur used to describe Métis people. It implies being 'less than' whole. This term ignores the distinct cultural and national identity of the Métis Nation." },
             "road_allowance": { term: "Road Allowance", def: "Strips of Crown land reserved for roads. Displaced Métis families built homes here as they were denied land scrip and had nowhere else to go." },
@@ -349,7 +362,7 @@
             "lateral_violence": { term: "Lateral Violence", def: "Violence directed against one's peers rather than oppressors, often fueled by colonial 'divide and conquer' tactics." }
         };
 
-        // --- 4. DATA: INTRO ---
+        // --- DATA: INTRO ---
         const introSequence = [
             "The year is 1970. You are a 100% Indigenous person, born to two Métis parents. You live on the Road Allowance because the government refuses to recognize your family's land rights.",
             "Despite your full Indigenous heritage, the world tries to fracture you. To the government, you are a 'squatter.' To the Treaty Indians, you are not 'Indian' enough. To the white townsfolk, you are a 'half-breed.'",
@@ -357,7 +370,7 @@
             "(You must navigate a day at the Île-à-la-Crosse Residential School. Pay attention to your Spirit, Hunger, and Warmth. Survive the day.)"
         ];
 
-        // --- 5. DATA: STORY SCENES ---
+        // --- DATA: STORY SCENES ---
         const storyData = {
             "ready_check": {
                 speaker: "System",
@@ -472,7 +485,7 @@
                 text: `You endure the lesson in silence. The warmth of the room is the only comfort, though the words spoken here are cold.`,
                 specialAction: "returnToMap"
             },
-            // HALLWAY
+            // HALLWAY (RESTORED)
             "scene_hallway_start": {
                 bg: "images/hallway.jpg", characterImg: null, audio: "bgm-hall",
                 speaker: "Narrator",
@@ -487,6 +500,11 @@
             "scene_hallway_girl_2": {
                 bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
                 text: `(She shoves you.) "You don't belong here. This place is for Indians. You don't have a Treaty number. You are just a 'half-breed' charity case."`,
+                nextScene: "scene_hallway_girl_3"
+            },
+            "scene_hallway_girl_3": {
+                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
+                text: `(She leans in to whisper.) "Go cry to the nuns. They are the only ones who want you here."`,
                 effects: { spirit: -15 }, specialAction: "returnToMap"
             },
             "scene_hallway_boy_1": {
@@ -497,6 +515,11 @@
             "scene_hallway_boy_2": {
                 bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Boy)",
                 text: `"This school is for Real Indians. Not road allowance trash." (They kick at your shins. It hurts, but you don't cry out.)`,
+                nextScene: "scene_hallway_boy_3"
+            },
+            "scene_hallway_boy_3": {
+                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Boy)",
+                text: `"You are nobody's child. Stay away from us. Next time, we won't stop with just a few kicks."`,
                 effects: { spirit: -15, hunger: 5 }, specialAction: "returnToMap"
             },
             // LUNCH
@@ -543,7 +566,6 @@
             state.isTyping = true;
             document.getElementById('continuePrompt').style.visibility = 'hidden'; 
 
-            // If Skip Mode, show immediately
             if (state.isSkip) {
                 element.innerHTML = text;
                 state.isTyping = false;
@@ -560,7 +582,7 @@
                     state.isTyping = false;
                     document.getElementById('continuePrompt').style.visibility = 'visible';
                     if (state.isAuto) {
-                        autoInterval = setTimeout(() => advanceGlobal({target:{tagName:'BODY'}}), 3000); // Wait 3s then advance
+                        autoInterval = setTimeout(() => advanceGlobal({target:{tagName:'BODY'}}), 3000); 
                     }
                 }
             }
@@ -587,7 +609,8 @@
                 typeWriter(introSequence[state.introIndex], 'story-text');
             } else {
                 state.inIntro = false;
-                // Wait for player to click yes to show UI
+                document.getElementById('statsContainer').style.display = 'flex';
+                document.getElementById('controlBar').style.display = 'flex';
                 showScene("ready_check");
             }
         }
@@ -598,7 +621,6 @@
                 return;
             }
 
-            // Save history for Back button
             if (state.currentSceneId && state.currentSceneId !== sceneId) {
                 state.historyStack.push(state.currentSceneId);
             }
@@ -608,19 +630,16 @@
             state.currentScene = scene; 
             state.waitingForInput = false; 
 
-            // Dynamic Work Text
             if (sceneId === "scene_work") {
                 scene.text = (state.gender === 'female') 
                     ? "It is time for 'Half-Day' work. Girls cook and clean. You scrub floors until your knees are raw." 
                     : "It is time for 'Half-Day' work. Boys chop wood. You haul logs until your muscles burn.";
             }
 
-            // Notebook & Audio
             if (scene.unlocks) scene.unlocks.forEach(id => unlockTerm(id));
             if (scene.audio) playAudio(scene.audio);
             if (scene.sfx) playSFX(scene.sfx);
 
-            // Images
             const charImgTag = document.getElementById('char-img-tag');
             const charImgDiv = document.getElementById('character-sprite');
             if (scene.characterImg === null) charImgDiv.style.opacity = 0;
@@ -636,7 +655,6 @@
             if (scene.bg) document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
             if (scene.effects) applyStats(scene.effects);
 
-            // Name Tag
             const nameTag = document.getElementById('name-tag');
             if (scene.speaker) {
                 nameTag.innerText = scene.speaker;
@@ -645,12 +663,10 @@
                 nameTag.style.visibility = 'hidden';
             }
 
-            // Log
             let processedText = scene.text.replace("[Name]", state.name);
             addToLog(scene.speaker, processedText);
 
             typeWriter(processedText, 'story-text');
-            // Check stats ONLY if we are not in intro/game over
             if (!state.inIntro && !sceneId.includes("game_over")) checkStats();
         }
 
@@ -666,13 +682,7 @@
                 btn.className = 'choice-btn';
                 btn.innerText = c.text;
                 if (c.action === "exitGame") btn.onclick = () => location.reload();
-                else if (c.action === "startAudio") btn.onclick = () => { 
-                    // SHOW UI NOW
-                    document.getElementById('statsContainer').style.display = 'flex';
-                    document.getElementById('controlBar').style.display = 'flex';
-                    playAudio("bgm-wind"); 
-                    makeChoice(c); 
-                };
+                else if (c.action === "startAudio") btn.onclick = () => { playAudio("bgm-wind"); makeChoice(c); };
                 else btn.onclick = () => makeChoice(c); 
                 container.appendChild(btn);
             });
@@ -691,7 +701,6 @@
             state.warmth = Math.max(0, Math.min(100, state.warmth + (effects.warmth || 0)));
             state.spirit = Math.max(0, Math.min(100, state.spirit + (effects.spirit || 0)));
             
-            // Notification logic
             let msgs = [];
             if(effects.hunger) msgs.push(`Hunger ${effects.hunger > 0 ? '+' : ''}${effects.hunger}`);
             if(effects.warmth) msgs.push(`Warmth ${effects.warmth > 0 ? '+' : ''}${effects.warmth}`);
@@ -712,12 +721,10 @@
             else if (state.spirit <= 0) showScene("game_over_spirit");
         }
 
-        // --- CONTROLS ---
-        
         function goBack() {
             if (state.historyStack.length > 0) {
                 const prevScene = state.historyStack.pop();
-                state.currentSceneId = null; // Force reload
+                state.currentSceneId = null; 
                 showScene(prevScene);
             }
         }
@@ -755,15 +762,14 @@
             ).join('');
         }
 
-        // --- MAP & TIME ---
         function triggerMapScene(id, dur) {
             state.mapActive = false;
             document.getElementById('map-layer').style.display = 'none';
             document.getElementById('dialogue-container').style.opacity = 1;
             if(dur) state.time += dur;
-            // Handle lunch trap
+            
             if(state.time >= 12 && !state.lunchEaten && id !== 'scene_lunch') {
-                state.lunchEaten = true; state.time = 12; // Force time
+                state.lunchEaten = true; state.time = 12; updateTimeDisplay();
                 showScene('scene_lunch');
             } else {
                 updateTimeDisplay();
@@ -783,7 +789,6 @@
             document.getElementById('spirit-stat').innerText = state.spirit + "%";
         }
 
-        // --- UTILS ---
         function setVolume(val) { document.querySelectorAll('audio').forEach(a => a.volume = val); }
         function toggleMute() {
             state.isMuted = !state.isMuted;
@@ -822,30 +827,35 @@
             ).join('') : '<p style="text-align:center;">Play to unlock.</p>';
         }
 
-        // --- INPUT HANDLING ---
+        function triggerTimeSkip() {
+            state.inTimeSkip = true;
+            state.waitingForInput = false;
+            document.getElementById('dialogue-container').style.opacity = 0;
+            document.getElementById('statsContainer').style.display = 'none'; 
+            const overlay = document.getElementById('time-skip-overlay');
+            overlay.classList.add('overlay-active');
+            setTimeout(() => { applyStats({ hunger: 10, spirit: -10, warmth: -15 }); }, 1000);
+            overlay.onclick = function() {
+                overlay.classList.remove('overlay-active');
+                document.getElementById('dialogue-container').style.opacity = 1;
+                document.getElementById('statsContainer').style.display = 'flex'; 
+                setTimeout(() => { state.inTimeSkip = false; showScene("school_entry"); }, 1500);
+                overlay.onclick = null; 
+            };
+        }
+
         function advanceGlobal(e) {
             if (e.target.tagName === 'BUTTON' || state.mapActive) return;
             if (state.inIntro) { playIntroNext(); return; }
             if (state.isTyping) { clearTypewriter(); document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name); return; }
             
-            // Scene Navigation Logic
             const sc = state.currentScene;
-            if (sc.specialAction === "triggerTimeSkip") { 
-                state.waitingForInput = false;
-                document.getElementById('dialogue-container').style.opacity = 0;
-                document.getElementById('time-skip-overlay').classList.add('overlay-active');
-                setTimeout(() => {
-                    applyStats({ hunger: 10, spirit: -10, warmth: -15 });
-                    document.getElementById('time-skip-overlay').classList.remove('overlay-active');
-                    document.getElementById('dialogue-container').style.opacity = 1;
-                    showScene("school_entry");
-                }, 1500);
-            } 
+            if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
             else if (sc.specialAction === "triggerMap") { 
                 state.mapActive = true; 
                 document.getElementById('map-layer').style.display = 'block';
                 document.getElementById('dialogue-container').style.opacity = 0;
-                // Button Logic
+                
                 const btnClass = document.getElementById('btn-class');
                 const btnHall = document.getElementById('btn-hallway');
                 const btnWork = document.getElementById('btn-work');
@@ -866,11 +876,11 @@
                     sc.specialAction = "triggerMap"; advanceGlobal(e);
                 }
             }
-            else if (sc.choices) { presentChoices(sc); }
+            else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
+            else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
             else if (sc.nextScene) { showScene(sc.nextScene); }
         }
 
-        // Init
         document.body.addEventListener('click', advanceGlobal);
         document.body.addEventListener('keydown', (e) => { 
             if (e.code === 'Space') advanceGlobal(e);
