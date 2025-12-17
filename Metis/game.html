@@ -3,248 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation</title>
+    <title>Métis Residential School Simulation</title>
     <style>
-        /* =========================================
-           1. GLOBAL & RESET
-           ========================================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ==========================================================================
+           1. GLOBAL RESET & BASE STYLES
+           ========================================================================== */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
 
         body {
             background-color: #000;
             height: 100vh;
-            overflow: hidden; 
+            width: 100vw;
+            overflow: hidden; /* Prevents scrollbars */
             font-family: 'Georgia', serif;
             color: white;
-            user-select: none;
+            user-select: none; /* Prevents highlighting UI text */
         }
 
-        /* =========================================
-           2. VISUAL LAYERS
-           ========================================= */
+        /* ==========================================================================
+           2. VISUAL LAYERS (Z-INDEX STACKING)
+           ========================================================================== */
         
-        /* LAYER 1: Background */
+        /* LAYER 1: Background Image */
         #bg-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #222; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: #111; 
             background-image: url('images/school.jpg'); 
-            background-size: cover; background-position: center;
-            z-index: 1; transition: opacity 0.5s ease-in-out;
+            background-size: cover; 
+            background-position: center;
+            z-index: 1; 
+            transition: opacity 0.5s ease-in-out;
         }
 
         /* LAYER 2: Character Sprite */
         #character-sprite {
-            position: absolute; bottom: 0; left: 5%; height: 85vh; width: auto;
+            position: absolute; 
+            bottom: 0; 
+            left: 5%; 
+            height: 85vh; 
+            width: auto;
             z-index: 5; 
-            pointer-events: none;
+            pointer-events: none; 
             filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
-            opacity: 0.95; transition: opacity 0.3s ease-in-out;
+            opacity: 0.95; 
+            transition: opacity 0.3s ease-in-out;
         }
 
         /* LAYER 3: Cinematic Bottom Gradient */
+        /* Improves text readability */
         #bottom-gradient {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 50vh;
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 50vh; 
             background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0) 100%);
             z-index: 6; 
             pointer-events: none;
         }
 
-        /* =========================================
+        /* ==========================================================================
            3. UI: TEXT BOX & NAME TAG
-           ========================================= */
+           ========================================================================== */
         
         #dialogue-container {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; 
-            z-index: 10; pointer-events: none;
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100vh; 
+            z-index: 10; 
+            pointer-events: none;
         }
 
         .text-box-wrapper {
-            position: absolute; bottom: 70px; 
-            left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 1200px;
-            pointer-events: auto;
+            position: absolute; 
+            bottom: 70px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 90%; 
+            max-width: 1200px;
+            pointer-events: auto; /* Allow clicking */
         }
 
+        /* Name Tag above dialogue */
         .name-tag {
             display: inline-block;
             background: linear-gradient(90deg, #8B4513, #5D4037);
             color: #FFD700;
-            padding: 5px 25px;
-            font-family: sans-serif; font-weight: bold; font-size: 1.2rem;
+            padding: 8px 30px;
+            font-family: sans-serif; 
+            font-weight: bold; 
+            font-size: 1.3rem;
             border-radius: 10px 10px 0 0;
-            border: 2px solid #aaa; border-bottom: none;
+            border: 2px solid #aaa; 
+            border-bottom: none;
             margin-left: 20px;
-            min-width: 150px; text-align: center;
-            visibility: hidden;
+            min-width: 180px; 
+            text-align: center;
+            visibility: hidden; 
             box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
-        }
-
-        .text-box-bg {
-            height: 28vh;
-            background: linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(40,40,40,0.9) 100%);
-            border: 2px solid #aaa;
-            border-radius: 10px; border-top-left-radius: 0;
-            padding: 25px 35px; 
-            color: #fff;
-            display: flex; flex-direction: column;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-        }
-
-        #story-text {
-            font-size: 1.3rem; line-height: 1.6;
-            flex-grow: 1; white-space: pre-wrap;
-            overflow-y: auto; padding-right: 15px;
             text-shadow: 1px 1px 2px #000;
         }
 
+        /* Main Text Box */
+        .text-box-bg {
+            height: 28vh; 
+            background: linear-gradient(180deg, rgba(20,20,20,0.98) 0%, rgba(40,40,40,0.95) 100%);
+            border: 2px solid #aaa;
+            border-radius: 10px; 
+            border-top-left-radius: 0; 
+            padding: 30px 40px; 
+            color: #fff;
+            display: flex; 
+            flex-direction: column;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.9);
+        }
+
+        #story-text {
+            font-size: 1.4rem; 
+            line-height: 1.6;
+            flex-grow: 1; 
+            white-space: pre-wrap; 
+            overflow-y: auto; 
+            padding-right: 15px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Scrollbar */
         #story-text::-webkit-scrollbar { width: 8px; }
         #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
         #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 4px; }
 
         .continue-prompt {
-            text-align: right; font-size: 0.9rem; color: #FFD700;
-            animation: blink 1.5s infinite; margin-top: 5px;
+            text-align: right; 
+            font-size: 1rem; 
+            color: #FFD700;
+            animation: blink 1.5s infinite; 
+            margin-top: 5px;
             visibility: hidden; 
         }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* =========================================
-           4. UI: TOP BAR
-           ========================================= */
+        /* ==========================================================================
+           4. UI: TOP BAR (Stats & Tools)
+           ========================================================================== */
+        
         .top-ui-container {
-            position: absolute; top: 20px; right: 20px;
-            display: flex; flex-direction: column; align-items: flex-end;
-            gap: 10px; z-index: 15; 
+            position: absolute; 
+            top: 20px; 
+            right: 20px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end;
+            gap: 15px; 
+            z-index: 15; 
         }
 
         .stats-bar {
-            background: rgba(0, 0, 0, 0.85); color: #fff;
-            padding: 8px 20px; border-radius: 50px;
-            display: flex; gap: 20px; 
-            font-family: sans-serif; font-size: 0.9rem; text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.9); 
+            color: #fff;
+            padding: 12px 30px; 
+            border-radius: 50px;
+            display: flex; 
+            gap: 30px; 
+            font-family: sans-serif; 
+            font-size: 1rem; 
+            text-transform: uppercase;
             border: 1px solid #555;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .stat-value { font-weight: bold; color: #FFD700; }
 
         .time-display {
-            background: rgba(0, 0, 0, 0.9); color: #eee;
-            padding: 5px 15px; border-radius: 5px;
-            font-family: monospace; font-size: 1.2rem; font-weight: bold;
+            background: rgba(0, 0, 0, 0.95); 
+            color: #eee;
+            padding: 10px 20px; 
+            border-radius: 8px;
+            font-family: 'Courier New', monospace; 
+            font-size: 1.4rem; 
+            font-weight: bold;
             border: 1px solid #777;
         }
 
         .top-btn {
-            background: #444; color: #fff; border: 1px solid #777;
-            padding: 5px 15px; cursor: pointer; font-size: 0.9rem; width: 100%;
-            border-radius: 4px; transition: background 0.2s;
+            background: #444; 
+            color: #fff; 
+            border: 1px solid #777;
+            padding: 8px 15px; 
+            cursor: pointer; 
+            font-size: 0.9rem; 
+            width: 100%;
+            border-radius: 4px; 
+            transition: background 0.2s;
+            text-align: center;
         }
         .top-btn:hover { background: #666; }
-        #notebook-btn { background: #8B4513; border-color: #D2691E; }
+        
+        #notebook-btn { 
+            background: #8B4513; 
+            border-color: #D2691E; 
+            font-weight: bold;
+        }
+        #notebook-btn:hover { background: #A0522D; }
 
         .volume-container {
-            background: rgba(0,0,0,0.8); padding: 5px 10px;
-            border-radius: 5px; display: flex; align-items: center; gap: 10px;
-            color: white; font-size: 0.8rem;
+            background: rgba(0,0,0,0.9); 
+            padding: 8px 15px;
+            border-radius: 5px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            color: white; 
+            font-size: 0.9rem;
+            border: 1px solid #555;
         }
-        input[type=range] { width: 100px; accent-color: #FFD700; }
+        input[type=range] { width: 100px; accent-color: #FFD700; cursor: pointer; }
 
-        /* =========================================
+        /* ==========================================================================
            5. UI: BOTTOM CONTROL BAR
-           ========================================= */
+           ========================================================================== */
         .control-bar {
-            position: absolute; bottom: 15px; right: 5%;
-            z-index: 20; display: flex; gap: 20px;
+            position: absolute; 
+            bottom: 15px; 
+            right: 5%;
+            z-index: 20; 
+            display: flex; 
+            gap: 25px;
         }
+
         .control-item {
-            background: none; border: none; 
+            background: none; 
+            border: none; 
             color: #ccc; 
-            font-family: sans-serif; font-size: 1rem; font-weight: bold;
-            text-transform: uppercase; cursor: pointer;
+            font-family: sans-serif; 
+            font-size: 1rem; 
+            font-weight: bold;
+            text-transform: uppercase; 
+            cursor: pointer;
             transition: all 0.2s;
             text-shadow: 0 2px 4px #000;
         }
-        .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 8px #fff; }
-        .control-item.active { color: #FFD700; }
+        .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 10px #fff; }
+        .control-item.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
-        /* =========================================
+        /* ==========================================================================
            6. OVERLAYS & MODALS
-           ========================================= */
+           ========================================================================== */
         
+        /* Map Screen */
         #map-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('images/school.jpg'); background-size: cover;
             filter: grayscale(100%) contrast(120%) brightness(40%); z-index: 25; 
             display: none; 
         }
-        .map-title { position: absolute; top: 10%; width: 100%; text-align: center; font-size: 2.5rem; color: #eee; text-transform: uppercase; letter-spacing: 5px; }
+        .map-title { 
+            position: absolute; top: 10%; width: 100%; text-align: center; 
+            font-size: 3rem; color: #eee; text-transform: uppercase; letter-spacing: 5px; 
+            text-shadow: 0 0 15px #000;
+        }
         .map-btn {
             position: absolute; background: #222; color: #ddd; border: 2px solid #555;
-            padding: 15px 25px; font-family: monospace; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; width: 220px; transition: transform 0.2s;
+            padding: 15px 30px; font-family: monospace; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; width: 240px; transition: transform 0.2s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
         .map-btn:hover { transform: scale(1.1); background: #ddd; color: #000; }
         .map-btn:disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
+        
         #btn-class { top: 30%; left: 20%; }
         #btn-hallway { top: 30%; right: 20%; }
         #btn-work { bottom: 30%; left: 50%; transform: translateX(-50%); }
 
+        /* Choices */
         #choices-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); z-index: 30; display: none;
-            justify-content: center; align-items: center; flex-direction: column; gap: 20px;
+            background: rgba(0,0,0,0.95); z-index: 30; display: none;
+            justify-content: center; align-items: center; flex-direction: column; gap: 25px;
         }
         .choice-btn {
             background: #f0f2f5; border: 2px solid #2c3e50; color: #2c3e50;
-            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; width: 70%;
+            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; width: 70%; max-width: 800px;
             border-radius: 5px; transition: transform 0.2s;
         }
         .choice-btn:hover { background: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
-        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.5rem; text-align: center; }
+        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.8rem; text-align: center; }
 
-        /* NOTEBOOK MODAL */
+        /* Modals (Notebook/Log) */
         .modal-overlay {
             display: none; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); width: 80%; max-width: 700px; height: 80vh;
-            background-color: #FDF5E6; /* Paper Color */
-            color: #333; border: 8px solid #5D4037;
+            transform: translate(-50%, -50%); width: 85%; max-width: 750px; height: 80vh;
+            background-color: #FDF5E6; color: #333; border: 10px solid #5D4037;
             border-radius: 5px; z-index: 50; padding: 40px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9); 
-            overflow-y: auto; font-family: 'Times New Roman', serif;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow-y: auto; font-family: 'Times New Roman', serif;
         }
-        .modal-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; cursor: pointer; }
-        .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px;}
+        .modal-close { 
+            position: absolute; top: 10px; right: 15px; 
+            background: none; border: none; font-size: 3rem; cursor: pointer; color: #5D4037;
+        }
         
+        .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px; font-size: 1.2rem;}
+        .modal-entry { margin-bottom: 20px; border-bottom: 1px dashed #999; padding-bottom: 10px; font-size: 1.1rem; }
+
+        /* Notebook Styling */
         .notebook-entry { 
             background: rgba(255, 255, 255, 0.6); 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border-left: 5px solid #8B4513; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-left: 8px solid #8B4513; 
             border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .notebook-term { 
-            font-weight: bold; font-size: 1.4rem; 
-            color: #8B0000; 
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 8px;
-            padding-bottom: 5px;
+            font-weight: bold; font-size: 1.6rem; color: #8B0000; 
+            border-bottom: 2px solid #ccc; margin-bottom: 10px; padding-bottom: 5px;
         }
-        .notebook-def { 
-            font-size: 1.1rem; line-height: 1.6; 
-        }
+        .notebook-def { font-size: 1.2rem; line-height: 1.6; }
 
+        /* Time Skip */
         #time-skip-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 40; display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none; transition: opacity 1.5s;
         }
-        #time-skip-text { color: white; font-size: 3rem; font-family: serif; }
+        #time-skip-text { color: white; font-size: 3rem; font-family: serif; letter-spacing: 2px; }
         .overlay-active { opacity: 1 !important; pointer-events: auto !important; }
 
+        /* Notification */
         #stat-notification {
-            position: absolute; top: 300px; right: 30px; text-align: right;
-            font-family: sans-serif; font-weight: bold; color: #fff; z-index: 16;
-            opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 4px #000;
+            position: absolute; top: 320px; right: 30px; text-align: right;
+            font-family: sans-serif; font-weight: bold; font-size: 1.1rem;
+            color: #fff; z-index: 16; opacity: 0; transition: opacity 0.5s; 
+            text-shadow: 2px 2px 4px #000;
         }
 
     </style>
@@ -257,7 +356,11 @@
     <audio id="sfx-bell"><source src="images/bell.mp3" type="audio/mpeg"></audio>
 
     <div id="bg-layer"></div>
-    <div id="character-sprite"><img src="" style="height:100%; width:auto;" id="char-img-tag" alt=""></div>
+    
+    <div id="character-sprite">
+        <img src="" style="height:100%; width:auto;" id="char-img-tag" alt="Character">
+    </div>
+    
     <div id="bottom-gradient"></div> 
 
     <div id="map-layer">
@@ -286,9 +389,9 @@
 
     <div id="dialogue-container">
         <div class="text-box-wrapper">
-            <div id="name-tag" class="name-tag">Sister of Charity</div>
+            <div id="name-tag" class="name-tag"></div>
             <div class="text-box-bg">
-                <div id="story-text">Loading...</div>
+                <div id="story-text">Loading simulation...</div>
                 <div id="continuePrompt" class="continue-prompt">▼</div>
             </div>
         </div>
@@ -326,32 +429,42 @@
 
 
     <script>
-        // --- 1. ERROR TRAP & UTILS ---
+        // --- 1. ERROR TRAP ---
         window.onerror = function(message, source, lineno, colno, error) {
             alert("GAME ERROR:\n" + message + "\nLine: " + lineno);
         };
 
         // --- 2. GAME STATE ---
         let state = {
+            // Stats
             hunger: 50, warmth: 100, spirit: 100, time: 8,
+            
+            // Player Identity
             name: "Student", gender: localStorage.getItem('playerGender') || "other",
+            
+            // Engine Flags
             introIndex: 0, isTyping: false, inIntro: true, currentSceneId: null,
             waitingForInput: false, inTimeSkip: false, mapActive: false,
-            historyStack: [], dialogueLog: [], unlockedTerms: [],
-            isAuto: false, isSkip: false, lunchEaten: false, visitedScenes: [], 
-            isMuted: false, currentTrack: null
+            
+            // Storage
+            historyStack: [], dialogueLog: [], unlockedTerms: [], visitedScenes: [],
+            
+            // Modes
+            isAuto: false, isSkip: false, lunchEaten: false, isMuted: false, currentTrack: null
         };
 
         let typeTimeouts = [];
         let autoInterval = null;
         let typeSpeed = 25;
 
-        // --- 3. ASSETS ---
+        // --- 3. ASSET INIT ---
         const charImgTag = document.getElementById('char-img-tag');
+        const charImgDiv = document.getElementById('character-sprite');
+        
         let playerImage = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
         charImgTag.src = playerImage;
 
-        // --- 4. NOTEBOOK DATA ---
+        // --- 4. NOTEBOOK DB ---
         const notebookDB = {
             "half_breed": { term: "Half-Breed", def: "A historical, derogatory racial slur used to describe Métis people. It implies being 'less than' whole. This term ignores the distinct cultural and national identity of the Métis Nation." },
             "road_allowance": { term: "Road Allowance", def: "Strips of Crown land reserved for roads. Displaced Métis families built homes here as they were denied land scrip and had nowhere else to go." },
@@ -361,7 +474,7 @@
             "lateral_violence": { term: "Lateral Violence", def: "Violence directed against one's peers rather than oppressors, often fueled by colonial 'divide and conquer' tactics." }
         };
 
-        // --- 5. DATA: INTRO ---
+        // --- 5. INTRO SEQUENCE ---
         const introSequence = [
             "The year is 1970. You are a 100% Indigenous person, born to two Métis parents. You live on the Road Allowance because the government refuses to recognize your family's land rights.",
             "Despite your full Indigenous heritage, the world tries to fracture you. To the government, you are a 'squatter.' To the Treaty Indians, you are not 'Indian' enough. To the white townsfolk, you are a 'half-breed.'",
@@ -369,7 +482,7 @@
             "(You must navigate a day at the Île-à-la-Crosse Residential School. Pay attention to your Spirit, Hunger, and Warmth. Survive the day.)"
         ];
 
-        // --- 6. DATA: STORY SCENES (FULL) ---
+        // --- 6. SCENE DATA ---
         const storyData = {
             "ready_check": {
                 speaker: "System",
@@ -484,7 +597,7 @@
                 text: `You endure the lesson in silence. The warmth of the room is the only comfort, though the words spoken here are cold.`,
                 specialAction: "returnToMap"
             },
-            // HALLWAY
+            // HALLWAY SCENES
             "scene_hallway_start": {
                 bg: "images/hallway.jpg", characterImg: null, audio: "bgm-hall",
                 speaker: "Narrator",
@@ -503,7 +616,7 @@
             },
             "scene_hallway_girl_3": {
                 bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
-                text: `(She leans in, lowering her voice.) "My mother told me about people like you. 'Les Petites Sauvages.' Go cry to the nuns. They are the only ones who want you here."`,
+                text: `(She leans in to whisper.) "Go cry to the nuns. They are the only ones who want you here."`,
                 effects: { spirit: -15 }, specialAction: "returnToMap"
             },
             "scene_hallway_boy_1": {
@@ -556,13 +669,22 @@
             "game_over_spirit": { bg: "images/road.JPG", speaker: "System", text: "GAME OVER: Broken Spirit. You ran away.", choices: [{text:"Restart", action:"exitGame"}]}
         };
 
-        // --- 7. FUNCTIONS ---
+        // --- 7. ENGINE FUNCTIONS ---
+
+        // CLEARS ACTIVE TYPING TO PREVENT "GIBBERISH"
+        function clearTypewriter() {
+            typeTimeouts.forEach(t => clearTimeout(t));
+            typeTimeouts = [];
+            if(autoInterval) clearTimeout(autoInterval);
+            state.isTyping = false;
+            document.getElementById('continuePrompt').style.visibility = 'visible';
+        }
 
         function typeWriter(text, elementId) {
             const element = document.getElementById(elementId);
             if(!element) return;
             
-            // KILL SWITCH: Clear any previous interval before starting
+            // KILL SWITCH: Stop any previous typing immediately
             clearTypewriter();
             
             element.innerHTML = ""; 
@@ -592,14 +714,6 @@
             type();
         }
 
-        function clearTypewriter() {
-            typeTimeouts.forEach(t => clearTimeout(t));
-            typeTimeouts = [];
-            if(autoInterval) clearTimeout(autoInterval);
-            state.isTyping = false;
-            document.getElementById('continuePrompt').style.visibility = 'visible';
-        }
-
         function playIntroNext() {
             document.getElementById('choices-overlay').style.display = 'none';
             if (state.isTyping) {
@@ -619,12 +733,13 @@
         }
 
         function showScene(sceneId) {
-            // Logic Redirects
+            // Handle Gender Redirect for Hallway
             if (sceneId === "checkGenderHallway") {
                 showScene(state.gender === 'female' ? "scene_hallway_girl_1" : "scene_hallway_boy_1");
                 return;
             }
 
+            // Save history for Back button
             if (state.currentSceneId && state.currentSceneId !== sceneId) {
                 state.historyStack.push(state.currentSceneId);
             }
@@ -634,33 +749,39 @@
             state.currentScene = scene; 
             state.waitingForInput = false; 
 
-            // Dynamic Work Text
+            // Dynamic Work Text Logic
             if (sceneId === "scene_work") {
                 scene.text = (state.gender === 'female') 
                     ? "It is time for 'Half-Day' work. Girls cook and clean. You scrub floors until your knees are raw." 
                     : "It is time for 'Half-Day' work. Boys chop wood. You haul logs until your muscles burn.";
             }
 
+            // Features
             if (scene.unlocks) scene.unlocks.forEach(id => unlockTerm(id));
             if (scene.audio) playAudio(scene.audio);
             if (scene.sfx) playSFX(scene.sfx);
 
-            // Images
+            // Asset Handling
             const charImgTag = document.getElementById('char-img-tag');
             const charImgDiv = document.getElementById('character-sprite');
-            if (scene.characterImg === null) charImgDiv.style.opacity = 0;
-            else {
+            
+            if (scene.characterImg === null) {
+                charImgDiv.style.opacity = 0;
+            } else {
                 let img = scene.characterImg || (state.gender === 'female' ? 'images/girl.png' : 'images/boy.png');
                 if (!charImgTag.src.includes(img)) { 
                     charImgDiv.style.opacity = 0; 
                     setTimeout(() => { charImgTag.src = img; charImgDiv.style.opacity = 0.95; }, 200); 
                 }
-                else charImgDiv.style.opacity = 0.95;
+                else {
+                    charImgDiv.style.opacity = 0.95;
+                }
             }
 
             if (scene.bg) document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
             if (scene.effects) applyStats(scene.effects);
 
+            // Nametag
             const nameTag = document.getElementById('name-tag');
             if (scene.speaker) {
                 nameTag.innerText = scene.speaker;
@@ -688,7 +809,10 @@
                 btn.className = 'choice-btn';
                 btn.innerText = c.text;
                 if (c.action === "exitGame") btn.onclick = () => location.reload();
-                else if (c.action === "startAudio") btn.onclick = () => { playAudio("bgm-wind"); makeChoice(c); };
+                else if (c.action === "startAudio") btn.onclick = () => { 
+                    playAudio("bgm-wind"); 
+                    makeChoice(c); 
+                };
                 else btn.onclick = () => makeChoice(c); 
                 container.appendChild(btn);
             });
@@ -846,52 +970,64 @@
                 document.getElementById('statsContainer').style.display = 'flex'; 
                 setTimeout(() => { state.inTimeSkip = false; showScene("school_entry"); }, 1500);
                 overlay.onclick = null; 
-            };
+            }, 1500); // FIXED: Added proper wait time
         }
 
         function advanceGlobal(e) {
-            if (e.target.tagName === 'BUTTON' || state.mapActive) return;
-            if (state.inIntro) { playIntroNext(); return; }
-            if (state.isTyping) { clearTypewriter(); document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name); return; }
+            if (e.target.tagName === 'BUTTON' || state.mapActive || state.inTimeSkip) return;
             
-            const sc = state.currentScene;
-            if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
-            else if (sc.specialAction === "triggerMap") { 
-                state.mapActive = true; 
-                document.getElementById('map-layer').style.display = 'block';
-                document.getElementById('dialogue-container').style.opacity = 0;
-                
-                const btnClass = document.getElementById('btn-class');
-                const btnHall = document.getElementById('btn-hallway');
-                const btnWork = document.getElementById('btn-work');
-                btnClass.disabled = true; btnHall.disabled = true; btnWork.disabled = true;
-                
-                if (state.time < 12) {
-                    if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
-                    if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
-                } else if (state.lunchEaten) {
-                    btnWork.disabled = false;
-                }
+            if (state.inIntro) { playIntroNext(); return; }
+
+            if (state.isTyping) {
+                clearTypewriter();
+                document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name);
+                return;
             }
-            else if (sc.specialAction === "returnToMap") {
-                if (state.time >= 12 && !state.lunchEaten) {
-                    state.lunchEaten = true; state.time = 12; updateTimeDisplay();
-                    showScene("scene_lunch");
-                } else {
-                    sc.specialAction = "triggerMap"; advanceGlobal(e);
+
+            if (state.waitingForInput) {
+                const sc = state.currentScene;
+                if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
+                else if (sc.specialAction === "triggerMap") { 
+                    state.mapActive = true; 
+                    document.getElementById('map-layer').style.display = 'block';
+                    document.getElementById('dialogue-container').style.opacity = 0;
+                    
+                    const btnClass = document.getElementById('btn-class');
+                    const btnHall = document.getElementById('btn-hallway');
+                    const btnWork = document.getElementById('btn-work');
+                    btnClass.disabled = true; btnHall.disabled = true; btnWork.disabled = true;
+                    
+                    if (state.time < 12) {
+                        if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
+                        if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
+                    } else if (state.lunchEaten) {
+                        btnWork.disabled = false;
+                    }
                 }
+                else if (sc.specialAction === "returnToMap") {
+                    if (state.time >= 12 && !state.lunchEaten) {
+                        state.lunchEaten = true; state.time = 12; updateTimeDisplay();
+                        showScene("scene_lunch");
+                    } else {
+                        sc.specialAction = "triggerMap"; advanceGlobal(e);
+                    }
+                }
+                else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
+                else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
+                else if (sc.nextScene) { showScene(sc.nextScene); }
             }
-            else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
-            else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
-            else if (sc.nextScene) { showScene(sc.nextScene); }
         }
 
-        document.body.addEventListener('click', advanceGlobal);
-        document.body.addEventListener('keydown', (e) => { 
-            if (e.code === 'Space') advanceGlobal(e);
-            if (e.key === 'Control') toggleSkip(); 
+        // --- 8. STARTUP SAFEGUARD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.addEventListener('click', advanceGlobal);
+            document.body.addEventListener('keydown', (e) => { 
+                if (e.code === 'Space') advanceGlobal(e);
+                if (e.key === 'Control') toggleSkip(); 
+            });
+            // Initial call to replace "Loading..."
+            setTimeout(() => typeWriter(introSequence[0], 'story-text'), 500);
         });
-        typeWriter(introSequence[0], 'story-text');
 
     </script>
 </body>
