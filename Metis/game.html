@@ -3,265 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Métis Residential School Simulation</title>
+    <title>Simulation</title>
     <style>
-        /* ==========================================================================
-           1. GLOBAL RESET & BASE STYLES
-           ========================================================================== */
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+        /* RESET & BASE */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: #000;
             height: 100vh;
-            width: 100vw;
-            overflow: hidden; 
+            overflow: hidden;
             font-family: 'Georgia', serif;
             color: white;
-            user-select: none;
         }
 
-        /* ==========================================================================
-           2. VISUAL LAYERS
-           ========================================================================== */
-        
-        /* LAYER 1: Background Image */
+        /* --- LAYERS --- */
+
+        /* 1. BACKGROUND */
         #bg-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #111; 
-            background-image: url('images/school.jpg'); 
-            background-size: cover; background-position: center;
-            z-index: 1; transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #222;
+            background-image: url('images/school.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            transition: opacity 0.5s ease-in-out;
         }
 
-        /* LAYER 2: Character Sprite */
-        #character-sprite {
-            position: absolute; bottom: 0; left: 5%; height: 85vh; width: auto;
-            z-index: 5; pointer-events: none; 
-            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
-            opacity: 0.95; transition: opacity 0.3s ease-in-out;
-        }
-
-        /* LAYER 3: Cinematic Bottom Gradient */
-        #bottom-gradient {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 50vh; 
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0) 100%);
-            z-index: 6; pointer-events: none;
-        }
-
-        /* ==========================================================================
-           3. UI: TEXT BOX & NAME TAG
-           ========================================================================== */
-        
-        #dialogue-container {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100vh; 
-            z-index: 10; pointer-events: none;
-        }
-
-        .text-box-wrapper {
-            position: absolute; bottom: 80px; /* Space for controls */
-            left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 1100px;
-            pointer-events: auto; 
-        }
-
-        /* NEW NAME TAG STYLE */
-        .name-tag {
-            display: inline-block;
-            background: linear-gradient(90deg, #8B4513, #5D4037);
-            color: #FFD700; /* Gold */
-            padding: 8px 30px;
-            font-family: sans-serif; font-weight: bold; font-size: 1.3rem;
-            border-radius: 8px 8px 0 0;
-            border: 2px solid #aaa; border-bottom: none;
-            margin-left: 0px; /* Aligned left */
-            min-width: 180px; text-align: center;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.5);
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        .text-box-bg {
-            height: 26vh; 
-            background: linear-gradient(180deg, rgba(30,30,30,0.98) 0%, rgba(10,10,10,0.95) 100%);
-            border: 2px solid #aaa;
-            border-radius: 8px; border-top-left-radius: 0; 
-            padding: 30px 40px; 
-            color: #fff;
-            display: flex; flex-direction: column;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.9);
-        }
-
-        #story-text {
-            font-size: 1.4rem; line-height: 1.6;
-            flex-grow: 1; white-space: pre-wrap; 
-            overflow-y: auto; padding-right: 15px;
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        #story-text::-webkit-scrollbar { width: 8px; }
-        #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
-        #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 4px; }
-
-        .continue-prompt {
-            text-align: right; font-size: 1rem; color: #FFD700;
-            animation: blink 1.5s infinite; margin-top: 5px;
-            visibility: hidden; 
-        }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* ==========================================================================
-           4. UI: TOP BAR (Stats, Clock, Notebook, Volume)
-           ========================================================================== */
-        
+        /* 2. TOP UI */
         .top-ui-container {
-            position: absolute; top: 20px; right: 20px;
-            display: flex; flex-direction: column; align-items: flex-end;
-            gap: 15px; z-index: 15; 
+            position: absolute;
+            top: 20px; right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 15;
         }
 
         .stats-bar {
-            background: rgba(0, 0, 0, 0.9); color: #fff;
-            padding: 12px 30px; border-radius: 50px;
-            display: flex; gap: 30px; 
-            font-family: sans-serif; font-size: 1rem; text-transform: uppercase;
-            border: 1px solid #555;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px 25px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            font-family: sans-serif;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid #555;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .stat-value { font-weight: bold; color: #FFD700; }
 
         .time-display {
-            background: rgba(0, 0, 0, 0.95); color: #eee;
-            padding: 10px 20px; border-radius: 8px;
-            font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold;
+            background: rgba(0, 0, 0, 0.9);
+            color: #eee;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
             border: 1px solid #777;
         }
 
-        #notebook-btn { 
-            background: #8B4513; border: 1px solid #D2691E; color: white;
-            padding: 8px 15px; cursor: pointer; font-size: 1rem; font-weight: bold;
-            border-radius: 4px; transition: background 0.2s; font-family: serif;
+        /* UI BUTTONS */
+        .ui-btn {
+            background: #8B4513;
+            color: #fff;
+            border: 2px solid #D2691E;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: serif;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            margin-top: 5px;
+            text-align: center;
+            width: 100%;
         }
-        #notebook-btn:hover { background: #A0522D; }
+        .ui-btn:hover { transform: scale(1.05); background: #A0522D; }
+        #audio-btn { background: #333; border-color: #555; }
 
-        /* NEW VOLUME SLIDER STYLE */
-        .volume-container {
-            background: rgba(0,0,0,0.9); padding: 8px 15px;
-            border-radius: 5px; display: flex; align-items: center; gap: 10px;
-            color: white; font-size: 0.9rem; border: 1px solid #555;
-        }
-        .volume-label { font-size: 1.2rem; cursor: pointer; }
-        input[type=range] { width: 120px; accent-color: #FFD700; cursor: pointer; }
-
-        /* ==========================================================================
-           5. UI: BOTTOM CONTROL BAR (Visual Novel Standard)
-           ========================================================================== */
-        .control-bar {
-            position: absolute; bottom: 20px; right: 5%;
-            z-index: 20; display: flex; gap: 25px;
+        /* 3. NOTIFICATIONS */
+        #stat-notification {
+            position: absolute;
+            top: 250px;
+            right: 30px;
+            text-align: right;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 1rem;
+            text-shadow: 1px 1px 3px #000;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
-        .control-item {
-            background: none; border: none; 
-            color: #bbb; /* Light grey */
-            font-family: sans-serif; font-size: 1.1rem; font-weight: bold;
-            text-transform: uppercase; cursor: pointer;
-            transition: all 0.2s;
-            text-shadow: 0 2px 4px #000;
+        /* 4. DIALOGUE */
+        #dialogue-container {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            height: 100vh;
+            z-index: 5;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
         }
-        .control-item:hover { color: #fff; transform: scale(1.1); text-shadow: 0 0 10px #fff; }
-        .control-item.active { color: #FFD700; border-bottom: 2px solid #FFD700; }
 
-        /* ==========================================================================
-           6. OVERLAYS (Map, Choices, Modals)
-           ========================================================================== */
-        
-        /* Map Screen */
-        #map-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('images/school.jpg'); background-size: cover;
-            filter: grayscale(100%) contrast(120%) brightness(40%); z-index: 25; 
-            display: none; 
+        #character-sprite {
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+            height: 85vh;
+            width: auto;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.8));
+            opacity: 0.95;
+            transition: opacity 0.3s ease-in-out;
         }
-        .map-title { 
-            position: absolute; top: 10%; width: 100%; text-align: center; 
-            font-size: 3rem; color: #eee; text-transform: uppercase; letter-spacing: 5px; 
-            text-shadow: 0 0 15px #000;
-        }
-        .map-btn {
-            position: absolute; background: #222; color: #ddd; border: 2px solid #555;
-            padding: 15px 30px; font-family: monospace; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; width: 240px; transition: transform 0.2s;
+
+        .text-box-bg {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 30vh;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #555;
+            border-radius: 10px;
+            padding: 25px 35px;
+            color: #fff;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            pointer-events: auto;
         }
-        .map-btn:hover { transform: scale(1.1); background: #ddd; color: #000; }
-        .map-btn:disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
-        
+
+        #story-text {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        #story-text::-webkit-scrollbar { width: 10px; }
+        #story-text::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 5px; }
+        #story-text::-webkit-scrollbar-thumb { background-color: #888; border-radius: 5px; border: 2px solid rgba(0,0,0,0.9); }
+
+        @media (max-height: 800px) {
+            #story-text { font-size: 1.1rem; }
+            #character-sprite { height: 80vh; }
+        }
+
+        .continue-prompt {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #aaa;
+            animation: blink 1.5s infinite;
+            margin-top: 10px;
+            visibility: hidden;
+            flex-shrink: 0;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* 5. CHOICES */
+        #choices-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 20;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .choice-btn {
+            background-color: #f0f2f5;
+            border: 2px solid #2c3e50;
+            color: #2c3e50;
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: sans-serif;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            border-radius: 8px;
+            pointer-events: auto;
+        }
+        .choice-btn:hover { background-color: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
+        #choice-prompt-text { color: white; margin-bottom: 30px; font-size: 1.5rem; text-align: center; max-width: 80%; }
+
+        /* 6. OVERLAYS (Time Skip / Map / Notebook) */
+        #time-skip-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+        }
+        #time-skip-text { color: white; font-size: 3rem; font-family: serif; letter-spacing: 2px; }
+        .overlay-active { opacity: 1 !important; pointer-events: auto !important; cursor: pointer; }
+
+        #map-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('images/school.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) contrast(120%) brightness(40%);
+            z-index: 25;
+            display: none;
+        }
+        .map-title { position: absolute; top: 10%; width: 100%; text-align: center; font-size: 2.5rem; color: #eee; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 10px #000; }
+        .map-btn {
+            position: absolute; background: #222; color: #ddd; border: 2px solid #555; padding: 15px 25px;
+            font-family: 'Courier New', monospace; font-weight: bold; text-transform: uppercase; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 0 15px rgba(0,0,0,0.8); width: 220px;
+        }
+        .map-btn:hover { background: #ddd; color: #111; border-color: #fff; transform: scale(1.1); }
+        .map-btn:disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; border-color: #333; }
         #btn-class { top: 30%; left: 20%; }
         #btn-hallway { top: 30%; right: 20%; }
         #btn-work { bottom: 30%; left: 50%; transform: translateX(-50%); }
 
-        /* Choices */
-        #choices-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 30; display: none;
-            justify-content: center; align-items: center; flex-direction: column; gap: 25px;
+        #notebook-modal {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80%; max-width: 600px; height: 70vh; background-color: #FDF5E6; color: #333;
+            border: 10px solid #5D4037; border-radius: 5px; z-index: 50; padding: 40px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow-y: auto; font-family: 'Times New Roman', serif;
         }
-        .choice-btn {
-            background: #f0f2f5; border: 2px solid #2c3e50; color: #2c3e50;
-            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; width: 70%; max-width: 800px;
-            border-radius: 5px; transition: transform 0.2s;
-        }
-        .choice-btn:hover { background: #2c3e50; color: white; transform: scale(1.02); border-color: #FFD700; }
-        #choice-prompt-text { color: white; margin-bottom: 20px; font-size: 1.8rem; text-align: center; }
-
-        /* Modals */
-        .modal-overlay {
-            display: none; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); width: 85%; max-width: 750px; height: 80vh;
-            background-color: #FDF5E6; color: #333; border: 10px solid #5D4037;
-            border-radius: 5px; z-index: 50; padding: 40px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow-y: auto; font-family: 'Times New Roman', serif;
-        }
-        .modal-close { 
-            position: absolute; top: 10px; right: 15px; 
-            background: none; border: none; font-size: 3rem; cursor: pointer; color: #5D4037;
-        }
-        
-        .modal-entry { margin-bottom: 20px; border-bottom: 1px dashed #999; padding-bottom: 10px; font-size: 1.1rem; }
-        .log-speaker { font-weight: bold; color: #8B0000; display: block; margin-bottom: 5px; }
-
-        /* Notebook Styling */
-        .notebook-entry { 
-            background: rgba(255, 255, 255, 0.6); 
-            padding: 20px; margin-bottom: 25px; 
-            border-left: 8px solid #8B4513; border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .notebook-term { 
-            font-weight: bold; font-size: 1.6rem; color: #8B0000; 
-            border-bottom: 2px solid #ccc; margin-bottom: 10px; padding-bottom: 5px;
-        }
-        .notebook-def { font-size: 1.2rem; line-height: 1.6; }
-
-        /* Time Skip */
-        #time-skip-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 40; display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 1.5s;
-        }
-        #time-skip-text { color: white; font-size: 3rem; font-family: serif; letter-spacing: 2px; }
-        .overlay-active { opacity: 1 !important; pointer-events: auto !important; }
-
-        /* Notifications */
-        #stat-notification {
-            position: absolute; top: 320px; right: 30px; text-align: right;
-            font-family: sans-serif; font-weight: bold; font-size: 1.1rem;
-            color: #fff; z-index: 16; opacity: 0; transition: opacity 0.5s; 
-            text-shadow: 2px 2px 4px #000;
-        }
+        #notebook-modal h2 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        .notebook-entry { margin-bottom: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 15px; }
+        .notebook-term { font-weight: bold; font-size: 1.2rem; color: #8B0000; }
+        .notebook-def { font-size: 1rem; line-height: 1.5; }
+        #close-notebook { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #333; }
 
     </style>
 </head>
@@ -273,13 +263,9 @@
     <audio id="sfx-bell"><source src="images/bell.mp3" type="audio/mpeg"></audio>
 
     <div id="bg-layer"></div>
-    <div id="character-sprite">
-        <img src="" style="height:100%; width:auto;" id="char-img-tag" alt="Character">
-    </div>
-    <div id="bottom-gradient"></div> 
 
     <div id="map-layer">
-        <h1 class="map-title">Daily Schedule</h1>
+        <h1 class="map-title">Schedule</h1>
         <button class="map-btn" id="btn-class" onclick="triggerMapScene('scene_class_start', 3)">Classroom (3h)</button>
         <button class="map-btn" id="btn-hallway" onclick="triggerMapScene('scene_hallway_start', 1)">Hallway (1h)</button>
         <button class="map-btn" id="btn-work" onclick="triggerMapScene('scene_work', 4)">School Labor (4h)</button>
@@ -292,50 +278,32 @@
             <span>Spirit: <span id="spirit-stat" class="stat-value">100%</span></span>
         </div>
         <div class="time-display" id="timeDisplay">8:00 AM</div>
-        <button id="notebook-btn" onclick="toggleModal('notebook-modal')">📖 Notebook</button>
-        
-        <div class="volume-container">
-            <span class="volume-label">🔊</span>
-            <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5" oninput="setVolume(this.value)">
-        </div>
+        <button class="ui-btn" id="notebook-btn" onclick="toggleNotebook()">📖 Historical Notebook</button>
+        <button class="ui-btn" id="audio-btn" onclick="toggleMute()">🔊 Audio: ON</button>
     </div>
-    
+   
     <div id="stat-notification"></div>
 
-    <div id="dialogue-container">
-        <div class="text-box-wrapper">
-            <div id="name-tag" class="name-tag">Narrator</div>
-            <div class="text-box-bg">
-                <div id="story-text">Loading simulation...</div>
-                <div id="continuePrompt" class="continue-prompt">▼</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="control-bar" id="controlBar" style="display:none;">
-        <button class="control-item" onclick="goBack()">Back</button>
-        <button class="control-item" onclick="toggleLog()">Log</button>
-        <button class="control-item" onclick="toggleAuto()" id="btn-auto">Auto</button>
-        <button class="control-item" onclick="toggleSkip()" id="btn-skip">Skip</button>
-    </div>
-
-    <div id="notebook-modal" class="modal-overlay">
-        <button class="modal-close" onclick="toggleModal('notebook-modal')">×</button>
+    <div id="notebook-modal">
+        <button id="close-notebook" onclick="toggleNotebook()">×</button>
         <h2>Historical Terms</h2>
         <div id="notebook-content">
-            <p style="text-align:center;">Play to unlock terms.</p>
+            <p style="text-align:center; font-style:italic;">No entries yet. Play the game to unlock definitions.</p>
         </div>
     </div>
 
-    <div id="log-modal" class="modal-overlay">
-        <button class="modal-close" onclick="toggleModal('log-modal')">×</button>
-        <h2>Dialogue Log</h2>
-        <div id="log-content"></div>
+    <div id="dialogue-container">
+        <img id="character-sprite" src="" alt="Character">
+        <div class="text-box-bg">
+            <div id="story-text">Loading...</div>
+            <div id="continuePrompt" class="continue-prompt">Click or Press Space to continue ▼</div>
+        </div>
     </div>
 
     <div id="choices-overlay">
         <h2 id="choice-prompt-text">Make a choice</h2>
-        <div id="choices-container" style="display:flex; flex-direction:column; gap:20px; width: 100%; align-items: center;"></div>
+        <div id="choices-container" style="display:flex; flex-direction:column; gap:20px; width: 100%; align-items: center;">
+        </div>
     </div>
 
     <div id="time-skip-overlay">
@@ -344,282 +312,379 @@
 
 
     <script>
-        // --- 1. ERROR TRAP ---
+        // --- ERROR TRAP ---
         window.onerror = function(message, source, lineno, colno, error) {
             alert("GAME ERROR:\n" + message + "\nLine: " + lineno);
         };
 
-        // --- 2. GAME STATE ---
+        // --- GAME STATE ---
         let state = {
-            hunger: 50, warmth: 100, spirit: 100, time: 8,
-            name: "Student", gender: localStorage.getItem('playerGender') || "other",
-            introIndex: 0, isTyping: false, inIntro: true, currentSceneId: null,
-            waitingForInput: false, inTimeSkip: false, mapActive: false,
-            historyStack: [], dialogueLog: [], unlockedTerms: [], visitedScenes: [],
-            isAuto: false, isSkip: false, lunchEaten: false, isMuted: false, currentTrack: null
+            hunger: 50, // 0 = Full, 100 = Starving
+            warmth: 100, // 100 = Warm, 0 = Freezing
+            spirit: 100, // 100 = Happy, 0 = Broken
+            time: 8,
+            name: localStorage.getItem('playerName') || "Student",
+            gender: localStorage.getItem('playerGender') || "other",
+            introIndex: 0,
+            isTyping: false,
+            inIntro: true,
+            currentScene: null,    
+            waitingForInput: false,
+            inTimeSkip: false,
+            visitedScenes: [],
+            mapActive: false,
+            lunchEaten: false,
+            unlockedTerms: [],
+            isMuted: false,
+            currentTrack: null
         };
 
+        const typeSpeed = 25;
         let typeTimeouts = [];
-        let autoInterval = null;
-        let typeSpeed = 25;
 
-        // --- 3. ASSETS ---
-        const charImgTag = document.getElementById('char-img-tag');
-        const charImgDiv = document.getElementById('character-sprite');
-        
-        let playerImage = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
-        charImgTag.src = playerImage;
+        // --- ASSETS ---
+        const charImgElement = document.getElementById('character-sprite');
+        let playerImage = 'images/boy.png';
+        if (state.gender === 'female') playerImage = 'images/girl.png';
+        charImgElement.src = playerImage;
 
-        // --- 4. NOTEBOOK DATA ---
-        const notebookDB = {
-            "half_breed": { term: "Half-Breed", def: "A historical, derogatory racial slur used to describe Métis people. It implies being 'less than' whole. This term ignores the distinct cultural and national identity of the Métis Nation." },
-            "road_allowance": { term: "Road Allowance", def: "Strips of Crown land reserved for roads. Displaced Métis families built homes here as they were denied land scrip and had nowhere else to go." },
-            "squatter": { term: "Squatters", def: "Government term for Métis families on Crown land, used to deny them services and education." },
-            "extern": { term: "Extern", def: "Day scholars who went home at night. Used to cut costs, but students still faced the school's abuse." },
-            "michif": { term: "Michif", def: "The language of the Métis (Cree verbs + French nouns). Schools violently suppressed this language." },
-            "lateral_violence": { term: "Lateral Violence", def: "Violence directed against one's peers rather than oppressors, often fueled by colonial 'divide and conquer' tactics." }
-        };
-
-        // --- 5. INTRO ---
+        // --- INTRO (REVISED) ---
         const introSequence = [
-            "The year is 1970. You are a 100% Indigenous person, born to two Métis parents. You live on the Road Allowance because the government refuses to recognize your family's land rights.",
-            "Despite your full Indigenous heritage, the world tries to fracture you. To the government, you are a 'squatter.' To the Treaty Indians, you are not 'Indian' enough. To the white townsfolk, you are a 'half-breed.'",
-            "This term—'half-breed'—is a lie. It is a slur designed to make you feel like you are only half a person. But you know the truth: you are whole. You are Métis.",
-            "(You must navigate a day at the Île-à-la-Crosse Residential School. Pay attention to your Spirit, Hunger, and Warmth. Survive the day.)"
+            "The year is 1970. You are a Métis child attending Île-à-la-Crosse Residential School. Both of your parents are Métis, descendants of the buffalo hunters and the Red River resistance. You are not 'half' of anything; you are fully Indigenous, belonging to a distinct Nation with its own culture and language.",
+            
+            "HISTORICAL NOTE: In this simulation, you will encounter the term 'half-breed.' This is a derogatory legal and social label historically used by the government and church to marginalize Métis people. It falsely implies that Métis are simply 'mixed-blood' individuals without a distinct identity. In reality, the Métis are a distinct Indigenous people, separate from First Nations and Inuit.",
+            
+            "Following the resistances of 1869 and 1885, Métis were often considered by the government and the churches to be rebellious or squatters. Many communities were forcibly relocated to Road Allowances in the Prairies.",
+            
+            "Around the turn of the 20th century, the federal government created classes of Métis to guide admission. The 'classes' were used to deny responsibility for Métis education, often leaving children in jurisdictional limbo.",
+            
+            "(You will begin your day waking up in your family's home on the Road Allowance. You must navigate a typical day at the Île-à-la-Crosse Residential School. Pay close attention to your three vital statistics: Hunger, Warmth, and Spirit. If they drop too low, you will face severe consequences.)"
         ];
 
-        // --- 6. STORY DATA ---
+        // --- NOTEBOOK DATA ---
+        const notebookDB = {
+            "road_allowance": { term: "Road Allowance", def: "Strips of Crown land reserved for potential road construction. Many Métis families built shacks here as they had nowhere else to live." },
+            "squatter": { term: "Squatters", def: "A derogatory term used by the government to describe Métis families living on Crown land to justify denying them services." },
+            "extern": { term: "Extern / Day Scholar", def: "Students who attended residential schools during the day but went home at night. Often treated as 'lesser' than boarders." },
+            "michif": { term: "Michif", def: "The language of the Métis people, blending Cree verbs with French nouns. Schools actively suppressed this language." },
+            "lateral_violence": { term: "Lateral Violence", def: "When oppressed groups direct anger toward each other. In schools, this manifested as conflict between First Nations and Métis students." }
+        };
+
+        // --- STORY DATA ---
         const storyData = {
             "ready_check": {
-                speaker: "System",
-                text: "Are you ready to begin your journey?",
+                text: "[Name], are you ready to begin your journey?",
+                promptLabel: "Are you ready?",
                 choices: [
-                    { text: "Yes (Start Audio)", nextScene: "start_part1", action: "startAudio" }, 
+                    { text: "Yes (Start Audio)", nextScene: "start_part1", action: "startAudio" },
                     { text: "No", action: "exitGame" }
                 ]
             },
-            // HOME
+           
+            // START
             "start_part1": {
-                bg: "images/road.JPG", audio: "bgm-wind",
-                speaker: "Narrator",
+                bg: "images/road.JPG",
+                audio: "bgm-wind",
                 text: `The morning air is biting cold. You wake up in your family's small home on the Road Allowance. It is technically not your land—government officials call your family "squatters".`,
-                nextScene: "start_part2", unlocks: ["road_allowance", "squatter", "half_breed"] 
+                nextScene: "start_part2",
+                unlocks: ["road_allowance", "squatter"]
             },
             "start_part2": {
-                bg: "images/road.JPG", speaker: "Narrator",
-                text: `The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush.`,
+                bg: "images/road.JPG",
+                audio: "bgm-wind",
+                text: `The house is drafty. Your grandmother is already awake, warming a small pot of tea. You know there is a long walk ahead of you. The school is miles away through the bush, and if you are late, the doors might be locked.`,
+                promptLabel: "What do you do?",
                 choices: [
-                    { text: "Leave immediately.", nextScene: "walk_intro", effects: { hunger: 10 } },
-                    { text: "Stay to eat bannock.", nextScene: "walk_intro", effects: { hunger: -30, warmth: 0, spirit: 5 } }, 
+                    { text: "Leave immediately.", nextScene: "walk_intro", effects: { hunger: 10, warmth: 0, spirit: 0 } },
+                    { text: "Stay to eat bannock.", nextScene: "walk_intro", effects: { hunger: -30, warmth: 0, spirit: 5 } },
                     { text: "Speak Michif.", nextScene: "walk_intro", effects: { hunger: 5, warmth: 0, spirit: 15 } }
                 ]
             },
+
             // WALK
             "walk_intro": {
-                bg: "images/road.JPG", speaker: "You",
-                text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt. Momma tried to make me look nice, but I know what they see. They see "filth."`,
+                bg: "images/road.JPG",
+                audio: "bgm-wind",
+                text: `I looked back at the shack one last time. It sits on that thirty-foot strip of dirt the government calls a road allowance, the only place they let us be.`,
                 nextScene: "walk_cold"
             },
-            "walk_cold": { 
-                bg: "images/road.JPG", speaker: "You",
-                text: `Three miles. It feels longer when the wind cuts right through this coat. I’m an "extern," that’s what they call us. Not a boarder, not fully part of the school.`,
-                nextScene: "walk_identity", unlocks: ["extern"] 
+            "walk_cold": {
+                bg: "images/road.JPG",
+                audio: "bgm-wind",
+                text: `Three miles. It feels longer when the wind cuts right through this coat. I’m an "extern," that’s what they call us. Not a boarder, not fully part of the school, just someone walking in from the bush.`,
+                nextScene: "walk_identity",
+                unlocks: ["extern"]
             },
-            "walk_identity": { 
-                bg: "images/road.JPG", speaker: "You",
+            "walk_identity": {
+                bg: "images/road.JPG",
+                audio: "bgm-wind",
                 text: `I listened to Dad argue with the Indian Agent. It’s always the same. We are too "white" for the Treaty benefits, but too "Indian" for the town schools.`,
-                nextScene: "arrival_scene" 
+                nextScene: "arrival_scene"
             },
+
             // ARRIVAL
             "arrival_scene": {
-                bg: "images/school2.jpg", speaker: "You",
+                bg: "images/school2.jpg",
+                audio: "bgm-wind",
                 effects: { spirit: -25, hunger: 15, warmth: -50 },
-                text: `I finally arrive at the school. The wind is biting, but the heavy wooden doors are shut tight. Through the frosted glass, I can see the yellow glow of the lamps.`,
-                choices: [
-                    { text: "Wait respectfully.", nextScene: "arrival_waiting", effects: { warmth: -10, spirit: -5 } },
-                    { text: "Knock on the doors.", nextScene: "arrival_knock", effects: { spirit: -15 } }
-                ]
-            },
-            "arrival_knock": {
-                bg: "images/school2.jpg", speaker: "Narrator",
-                text: `You knock. A face appears at the glass—a Sister. She scowls and points to the ground. "Wait your turn!" she mouths through the glass.`,
+                text: `I finally arrive at the school. Part of me wishes I stayed back at home helping father chop firewood. He's getting sicker by the day.`,
                 nextScene: "arrival_waiting"
             },
-            "arrival_waiting": { 
-                bg: "images/school2.jpg", speaker: "You",
-                text: `The Sisters of Charity say we clutter the halls if we come in before morning prayer. It doesn't matter that my toes are numb. I must wait.`,
-                specialAction: "triggerTimeSkip" 
+            "arrival_waiting": {
+                bg: "images/school2.jpg",
+                audio: "bgm-wind",
+                text: `The Sisters of Charity say we clutter the halls if we come in before morning prayer. I must wait in the snow.`,
+                specialAction: "triggerTimeSkip"
             },
-            // NUN ENTRY
-            "school_entry": { 
-                bg: "images/school2.jpg", characterImg: "images/nun.png", audio: "bgm-hall",
-                speaker: "Narrator",
-                text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.", 
-                nextScene: "nun_dialogue_1", sfx: "sfx-bell"
+            "school_entry": {
+                bg: "images/school2.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-hall",
+                text: "Finally, the bell rings and the heavy doors clank open. A Sister of Charity stands in the doorway, blocking the warmth from escaping.",
+                nextScene: "nun_dialogue_1",
+                sfx: "sfx-bell"
             },
             "nun_dialogue_1": {
-                bg: "images/school2.jpg", characterImg: "images/nun.png",
-                speaker: "Sister of Charity",
-                text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet.`,
+                bg: "images/school2.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-hall",
+                text: `Finally. Get in, get in. Don't drag that snow onto the floor. You half-breeds are always lurking about. Wipe your feet. You're lucky we let you in at all.`,
                 nextScene: "nun_dialogue_2"
             },
             "nun_dialogue_2": {
-                bg: "images/school2.jpg", characterImg: "images/nun.png",
-                speaker: "Sister of Charity",
+                bg: "images/school2.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-hall",
                 text: `The government doesn't pay a cent for you to be here, you know. You are here out of charity, so try to look less like a savage and more like a student.`,
                 specialAction: "triggerMap"
             },
-            // CLASSROOM
+
+            // --- CLASSROOM (INTERACTIVE) ---
             "scene_class_start": {
-                bg: "images/class.jpg", characterImg: null, audio: "bgm-class",
-                speaker: "Narrator",
+                bg: "images/class.jpg",
+                characterImg: null,
+                audio: "bgm-class",
                 text: `The room is austere. A crucifix hangs prominently on the wall.`,
                 nextScene: "scene_class_language"
             },
             "scene_class_language": {
-                bg: "images/class.jpg", characterImg: "images/nun.png",
-                speaker: "Sister of Charity",
+                bg: "images/class.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-class",
                 text: `I heard speaking in the hallway earlier. I heard that... dialect. You know the rules. English is the language of this school. If I hear that 'Michif' or Cree gibberish again, you will be punished.`,
-                nextScene: "scene_class_posture", unlocks: ["michif"] 
+                nextScene: "scene_class_yvonne",
+                unlocks: ["michif"]
+            },
+            "scene_class_yvonne": {
+                bg: "images/class.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-class",
+                text: `Let's hope we do not have another Yvonne incident... *she points to her ruler* young lady do you want to tell the new students what happened when you used your forbidden nonsense?`,
+                nextScene: "scene_class_posture"
             },
             "scene_class_posture": {
-                bg: "images/class.jpg", characterImg: "images/nun.png",
-                speaker: "Sister of Charity",
-                text: `Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here.`,
+                bg: "images/class.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-class",
+                text: `That's what I thought. Open your books. We are studying the settlement of the West. You must understand that before the government and the Church arrived, there was no order here. It is only through the grace of God that you are receiving an education.`,
+                promptLabel: "How do you react?",
                 choices: [
-                    { text: "Stay silent.", nextScene: "scene_class_end", effects: { spirit: -5, hunger: 5, warmth: 20 } },
-                    { text: "Whisper in Michif.", nextScene: "scene_class_punished", effects: { spirit: 5, hunger: 5, warmth: 20 } }
+                    {
+                        text: "Stay silent and keep your head down.",
+                        nextScene: "scene_class_end",
+                        effects: { spirit: -5, hunger: 5, warmth: 20 } // Safe but sad
+                    },
+                    {
+                        text: "Whisper in Michif under your breath.",
+                        nextScene: "scene_class_punished",
+                        effects: { spirit: 5, hunger: 5, warmth: 20 } // Defiant
+                    }
                 ]
             },
             "scene_class_punished": {
-                bg: "images/class.jpg", characterImg: "images/nun.png",
-                speaker: "Sister of Charity",
-                text: `The nun's ears are sharp. "I heard that!" she snaps. She forces you to stand in the corner facing the wall for the rest of the lesson.`,
-                effects: { spirit: -5 }, specialAction: "returnToMap"
+                bg: "images/class.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-class",
+                text: `The nun's ears are sharp. "I heard that!" she snaps. She forces you to stand in the corner facing the wall for the rest of the lesson. Your legs ache, but your spirit remains unbroken.`,
+                effects: { spirit: -5 }, // Penalty for getting caught
+                specialAction: "returnToMap"
             },
             "scene_class_end": {
-                bg: "images/class.jpg", characterImg: "images/nun.png", speaker: "You",
+                bg: "images/class.jpg",
+                characterImg: "images/nun.png",
                 text: `You endure the lesson in silence. The warmth of the room is the only comfort, though the words spoken here are cold.`,
                 specialAction: "returnToMap"
             },
-            // HALLWAY
+
+            // --- HALLWAY (INTERACTIVE) ---
             "scene_hallway_start": {
-                bg: "images/hallway.jpg", characterImg: null, audio: "bgm-hall",
-                speaker: "Narrator",
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
                 text: `The hallway smells of floor wax and old cabbage. You try to move quickly to your next task.`,
-                specialAction: "checkGenderHallway", unlocks: ["lateral_violence"] 
+                specialAction: "checkGenderHallway",
+                unlocks: ["lateral_violence"]
             },
             "scene_hallway_girl_1": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
-                text: `(She steps out, blocking your path.) "Where do you think you are going, Monias? You aren't white enough for them, and you certainly aren't one of us."`,
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
+                text: `Cree Student (Girl): (She steps out, blocking your path.)\n\n"Where do you think you are going, Monias? You aren't white enough for them, and you certainly aren't one of us."`,
                 nextScene: "scene_hallway_girl_2"
             },
             "scene_hallway_girl_2": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
-                text: `(She shoves you.) "You don't belong here. This place is for Indians. You don't have a Treaty number. You are just a 'half-breed' charity case."`,
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
+                text: `(She shoves your shoulder.)\n\n"You don't belong here. This place is for Indians. You don't have a Treaty number. You are just a 'half-breed' charity case taking our food."`,
                 nextScene: "scene_hallway_girl_3"
             },
             "scene_hallway_girl_3": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Girl)",
-                text: `(She leans in to whisper.) "Go cry to the nuns. They are the only ones who want you here."`,
-                effects: { spirit: -15 }, specialAction: "returnToMap"
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                text: `(She leans in, lowering her voice to a cruel whisper.)\n\n"My mother told me about people like you. 'Les Petites Sauvages,' the white townspeople call you. But in here? You are just a 'bannock-eater'. You act like you are special because maybe you speak French, or maybe you have some fancy beads sewn poorly on your scarf, but you are just an illegitimate mistake. Go cry to the nuns. They are the only ones who want you here."`,
+                effects: { spirit: -20, warmth: -5 },
+                specialAction: "returnToMap"
             },
             "scene_hallway_boy_1": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Boy)",
-                text: `(He slams you against the wall.) "What are you looking at, Monias? You are a traitor. Your grandfathers helped the white man take our land."`,
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
+                text: `Cree Student (Boy): (He slams you against the wall.)\n\n"What are you looking at, Monias? You are a traitor. Your grandfathers helped the white man take our land."`,
                 nextScene: "scene_hallway_boy_2"
             },
             "scene_hallway_boy_2": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Boy)",
-                text: `"This school is for Real Indians. Not road allowance trash." (They kick at your shins. It hurts, but you don't cry out.)`,
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
+                text: `"This school is for Real Indians. Not road allowance trash."\n\n(They kick at your shins. It hurts, but you don't cry out.)`,
                 nextScene: "scene_hallway_boy_3"
             },
             "scene_hallway_boy_3": {
-                bg: "images/hallway.jpg", characterImg: null, speaker: "Cree Student (Boy)",
-                text: `"You are nobody's child. If you tell the Supervisor, we will tell them you started it. Stay away from us. Next time, we won't stop with just a few kicks."`,
-                effects: { spirit: -15, hunger: 5 }, specialAction: "returnToMap"
+                bg: "images/hallway.jpg",
+                characterImg: null,
+                text: `"You don't have a band. You don't have a chief. You are nobody's child. If you tell the Supervisor, we will tell them you started it. And who will they believe? The savage, or the half-breed who doesn't know his place? Stay away from us. Next time, we won't stop with just a few kicks."`,
+                effects: { spirit: -20, hunger: 5 },
+                specialAction: "returnToMap"
             },
-            // LUNCH
+
+            // --- LUNCH (INTERACTIVE) ---
             "scene_lunch": {
-                bg: "images/school2.jpg", characterImg: null, audio: "bgm-hall", speaker: "Supervisor",
-                text: `The bell rings for noon. "Day scholars outside!" the supervisor barks. You sit on the cold steps. Your bannock is frozen.`,
+                bg: "images/school2.jpg",
+                characterImg: null,
+                audio: "bgm-hall",
+                text: `The bell rings for noon. The "Boarders" line up for the dining hall. As an "Extern," you are stopped at the dining hall door. "Day scholars outside," the supervisor barks.\n\nYou sit on the cold steps. Your bannock from home is frozen solid.`,
+                promptLabel: "What do you do?",
                 choices: [
-                    { text: "Eat frozen bannock.", nextScene: "scene_lunch_eat", effects: { hunger: -15, warmth: -10 } },
-                    { text: "Skip lunch.", nextScene: "scene_lunch_skip", effects: { hunger: 10, spirit: 5 } }
+                    {
+                        text: "Eat the frozen bannock.",
+                        nextScene: "scene_lunch_eat",
+                        effects: { hunger: -15, warmth: -10 } // Reduces hunger, but makes you colder
+                    },
+                    {
+                        text: "Skip lunch to stay warm inside your coat.",
+                        nextScene: "scene_lunch_skip",
+                        effects: { hunger: 10, spirit: 5 } // Hungrier, but defiant
+                    }
                 ]
             },
             "scene_lunch_eat": {
-                bg: "images/school2.jpg", speaker: "You",
+                bg: "images/school2.jpg",
                 text: `You chip away at the frozen bread. It sits heavy and cold in your stomach, but the gnawing hunger fades slightly.`,
                 specialAction: "returnToMap"
             },
             "scene_lunch_skip": {
-                bg: "images/school2.jpg", speaker: "You",
+                bg: "images/school2.jpg",
                 text: `You refuse to eat the frozen food like an animal. You wrap your coat tighter and wait for the bell, hungry but proud.`,
                 specialAction: "returnToMap"
             },
-            // WORK & END
+
+            // --- WORK ---
             "scene_work": {
-                bg: "images/school2.jpg", characterImg: "images/nun.png", audio: "bgm-class", speaker: "Narrator",
-                text: "[DYNAMIC_TEXT]", effects: { hunger: 20, spirit: -15, warmth: 0 }, nextScene: "end_of_day"
+                bg: "images/school2.jpg",
+                characterImg: "images/nun.png",
+                audio: "bgm-class",
+                text: "[DYNAMIC_TEXT]",
+                effects: { hunger: 20, spirit: -15, warmth: 0 },
+                nextScene: "end_of_day"
             },
             "end_of_day": {
-                bg: "images/road.JPG", characterImg: null, audio: "bgm-wind", speaker: "Narrator",
-                text: `The final bell rings. The day is over. While the Boarders retreat to their dorms, you are pushed back out into the cold evening air. You survived another day.`,
-                choices: [{ text: "Restart Simulation", action: "exitGame" }]
+                bg: "images/road.JPG",
+                characterImg: null,
+                audio: "bgm-wind",
+                text: `The final bell rings. The day is over. While the Boarders retreat to their dorms, you are pushed back out into the cold evening air.\n\nYou survived another day. But you have to do it all again tomorrow.`,
+                promptLabel: "End of Demo",
+                choices: [
+                    { text: "Restart Simulation", action: "exitGame" }
+                ]
             },
-            // GAME OVER SCENES
-            "game_over_cold": { bg: "images/road.JPG", speaker: "System", text: "GAME OVER: Hypothermia. The cold was too much.", choices: [{text:"Restart", action:"exitGame"}]},
-            "game_over_starve": { bg: "images/school2.jpg", speaker: "System", text: "GAME OVER: Malnutrition. You collapsed.", choices: [{text:"Restart", action:"exitGame"}]},
-            "game_over_spirit": { bg: "images/road.JPG", speaker: "System", text: "GAME OVER: Broken Spirit. You ran away.", choices: [{text:"Restart", action:"exitGame"}]}
+
+            // --- GAME OVER SCENES ---
+            "game_over_cold": {
+                bg: "images/road.JPG",
+                text: `GAME OVER: Hypothermia.\n\nThe cold was too much. You collapsed on the road allowance before reaching safety. In this system, warmth is a luxury you could not afford.`,
+                promptLabel: "Try Again",
+                choices: [{ text: "Restart", action: "exitGame" }]
+            },
+            "game_over_starve": {
+                bg: "images/school2.jpg",
+                text: `GAME OVER: Malnutrition.\n\nThe lack of food has taken its toll. You fainted during chores and were taken to the Indian Hospital. You may never return home.`,
+                promptLabel: "Try Again",
+                choices: [{ text: "Restart", action: "exitGame" }]
+            },
+            "game_over_spirit": {
+                bg: "images/road.JPG",
+                text: `GAME OVER: Broken Spirit.\n\nThe constant abuse and isolation broke your will. You ran away into the bush, preferring the risk of the wild to the cruelty of the school.`,
+                promptLabel: "Try Again",
+                choices: [{ text: "Restart", action: "exitGame" }]
+            }
         };
 
-        // --- 7. FUNCTIONS ---
+        // --- FUNCTIONS ---
 
-        // KILL SWITCH to stop gibberish
-        function clearTypewriter() {
-            typeTimeouts.forEach(t => clearTimeout(t));
-            typeTimeouts = [];
-            if(autoInterval) clearTimeout(autoInterval);
-            state.isTyping = false;
-            document.getElementById('continuePrompt').style.visibility = 'visible';
+        function checkStats() {
+            if (state.warmth <= 0) showScene("game_over_cold");
+            else if (state.hunger >= 100) showScene("game_over_starve");
+            else if (state.spirit <= 0) showScene("game_over_spirit");
         }
 
-        function typeWriter(text, elementId) {
+        function typeWriter(text, elementId, callback) {
             const element = document.getElementById(elementId);
-            if(!element) return;
-            
-            clearTypewriter(); // Kill previous
-            
-            element.innerHTML = ""; 
+            if (!element) return;
+            element.innerHTML = "";
             state.isTyping = true;
-            document.getElementById('continuePrompt').style.visibility = 'hidden'; 
-
-            if (state.isSkip) {
-                element.innerHTML = text;
-                state.isTyping = false;
-                document.getElementById('continuePrompt').style.visibility = 'visible';
-                return;
-            }
+            document.getElementById('continuePrompt').style.visibility = 'hidden';
 
             let i = 0;
             function type() {
                 if (i < text.length) {
-                    element.innerHTML += text.charAt(i); i++;
+                    if (text.charAt(i) === '<') {
+                        let tag = '';
+                        while (text.charAt(i) !== '>' && i < text.length) { tag += text.charAt(i); i++; }
+                        tag += '>'; i++;
+                        element.innerHTML += tag;
+                    } else {
+                        element.innerHTML += text.charAt(i); i++;
+                    }
                     typeTimeouts.push(setTimeout(type, typeSpeed));
                 } else {
                     state.isTyping = false;
                     document.getElementById('continuePrompt').style.visibility = 'visible';
-                    if (state.isAuto) {
-                        autoInterval = setTimeout(() => advanceGlobal({target:{tagName:'BODY'}}), 3000); 
-                    }
+                    if (callback) callback();
                 }
             }
             type();
         }
 
+        function clearTypewriter() {
+            typeTimeouts.forEach(timeout => clearTimeout(timeout));
+            typeTimeouts = [];
+            state.isTyping = false;
+            document.getElementById('continuePrompt').style.visibility = 'visible';
+        }
+
         function playIntroNext() {
-            document.getElementById('choices-overlay').style.display = 'none';
+             document.getElementById('choices-overlay').style.display = 'none';
             if (state.isTyping) {
                 clearTypewriter();
                 document.getElementById('story-text').innerHTML = introSequence[state.introIndex];
@@ -630,185 +695,257 @@
                 typeWriter(introSequence[state.introIndex], 'story-text');
             } else {
                 state.inIntro = false;
-                document.getElementById('statsContainer').style.display = 'flex';
-                document.getElementById('controlBar').style.display = 'flex';
                 showScene("ready_check");
             }
         }
 
         function showScene(sceneId) {
-            // Gender check
             if (sceneId === "checkGenderHallway") {
-                showScene(state.gender === 'female' ? "scene_hallway_girl_1" : "scene_hallway_boy_1");
+                if (state.gender === 'female') showScene("scene_hallway_girl_1");
+                else showScene("scene_hallway_boy_1");
                 return;
             }
 
-            // History Stack for Back Button
-            if (state.currentSceneId && state.currentSceneId !== sceneId) {
-                state.historyStack.push(state.currentSceneId);
-            }
-            state.currentSceneId = sceneId;
-
             const scene = storyData[sceneId];
-            state.currentScene = scene; 
-            state.waitingForInput = false; 
+            if (!scene) return alert("Error: Scene not found: " + sceneId);
+
+            state.currentScene = scene;
+            state.waitingForInput = false;
 
             // Dynamic Text
             if (sceneId === "scene_work") {
-                scene.text = (state.gender === 'female') 
-                    ? "It is time for 'Half-Day' work. Girls cook and clean. You scrub floors until your knees are raw." 
-                    : "It is time for 'Half-Day' work. Boys chop wood. You haul logs until your muscles burn.";
+                if (state.gender === 'female') {
+                    scene.text = "It is time for the 'Half-Day' work. For girls, this means cooking, cleaning, laundry, and sewing. You scrub the floors until your knees are raw, unpaid and unthanked.";
+                } else {
+                    scene.text = "It is time for the 'Half-Day' work. For boys, this means farming, wood-chopping, and stock raising. You haul heavy logs in the cold until your muscles burn, unpaid and unthanked.";
+                }
             }
 
-            // Utils
-            if (scene.unlocks) scene.unlocks.forEach(id => unlockTerm(id));
+            if (scene.unlocks) scene.unlocks.forEach(termId => unlockTerm(termId));
             if (scene.audio) playAudio(scene.audio);
             if (scene.sfx) playSFX(scene.sfx);
 
             // Images
-            const charImgTag = document.getElementById('char-img-tag');
-            const charImgDiv = document.getElementById('character-sprite');
-            
+            const charImg = document.getElementById('character-sprite');
             if (scene.characterImg === null) {
-                charImgDiv.style.opacity = 0;
+                 charImg.style.opacity = 0;
+            } else if (scene.characterImg) {
+                if (!charImg.src.includes(scene.characterImg)) {
+                     charImg.style.opacity = 0;
+                     setTimeout(() => { charImg.src = scene.characterImg; charImg.style.opacity = 0.95; }, 200);
+                } else { charImg.style.opacity = 0.95; }
             } else {
-                let img = scene.characterImg || (state.gender === 'female' ? 'images/girl.png' : 'images/boy.png');
-                if (!charImgTag.src.includes(img)) { 
-                    charImgDiv.style.opacity = 0; 
-                    setTimeout(() => { charImgTag.src = img; charImgDiv.style.opacity = 0.95; }, 200); 
-                }
-                else charImgDiv.style.opacity = 0.95;
+                let playerDefault = (state.gender === 'female') ? 'images/girl.png' : 'images/boy.png';
+                if (!charImg.src.includes(playerDefault)) {
+                    charImg.style.opacity = 0;
+                    setTimeout(() => { charImg.src = playerDefault; charImg.style.opacity = 0.95; }, 200);
+                } else { charImg.style.opacity = 0.95; }
             }
 
-            if (scene.bg) document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
+            // Stats
             if (scene.effects) applyStats(scene.effects);
 
-            // Name Tag
-            const nameTag = document.getElementById('name-tag');
-            nameTag.innerText = scene.speaker || "Narrator";
-            nameTag.style.visibility = 'visible';
-
             let processedText = scene.text.replace("[Name]", state.name);
-            addToLog(scene.speaker, processedText);
+            if (scene.bg) {
+                 document.getElementById('bg-layer').style.backgroundImage = `url('${scene.bg}')`;
+            }
 
-            typeWriter(processedText, 'story-text');
-            if (!state.inIntro && !sceneId.includes("game_over")) checkStats();
+            typeWriter(processedText, 'story-text', () => {
+                state.waitingForInput = true;
+                checkStats(); // Check for Game Over after text
+            });
         }
 
         function presentChoices(scene) {
             const overlay = document.getElementById('choices-overlay');
             const container = document.getElementById('choices-container');
-            const prompt = document.getElementById('choice-prompt-text');
-            container.innerHTML = ''; 
-            prompt.innerText = scene.promptLabel || "Make a choice";
+            const promptLabel = document.getElementById('choice-prompt-text');
+           
+            container.innerHTML = '';
+            promptLabel.innerText = scene.promptLabel || "Make a choice";
 
-            scene.choices.forEach(c => {
+            scene.choices.forEach(choice => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
-                btn.innerText = c.text;
-                if (c.action === "exitGame") btn.onclick = () => location.reload();
-                else if (c.action === "startAudio") btn.onclick = () => { 
-                    playAudio("bgm-wind"); 
-                    makeChoice(c); 
-                };
-                else btn.onclick = () => makeChoice(c); 
+                btn.innerText = choice.text;
+                if (choice.action === "exitGame") {
+                    btn.onclick = () => window.location.href = 'index.html';
+                }
+                else if (choice.action === "startAudio") {
+                    btn.onclick = () => { playAudio("bgm-wind"); makeChoice(choice); };
+                }
+                else {
+                    btn.onclick = () => makeChoice(choice);
+                }
                 container.appendChild(btn);
             });
             overlay.style.display = 'flex';
         }
 
+        function showNotification(changes) {
+            let messages = [];
+            if (changes && changes.hunger) {
+                if (changes.hunger > 0) messages.push(`<span style="color:#ff6b6b">Hunger +${changes.hunger}%</span>`);
+                else messages.push(`<span style="color:#51cf66">Hunger -${Math.abs(changes.hunger)}%</span>`);
+            }
+            if (changes && changes.warmth) {
+                if (changes.warmth < 0) messages.push(`<span style="color:#ff6b6b">Warmth -${Math.abs(changes.warmth)}%</span>`);
+                else messages.push(`<span style="color:#51cf66">Warmth +${changes.warmth}%</span>`);
+            }
+            if (changes && changes.spirit) {
+                 if (changes.spirit < 0) messages.push(`<span style="color:#ff6b6b">Spirit -${Math.abs(changes.spirit)}%</span>`);
+                 else messages.push(`<span style="color:#51cf66">Spirit +${changes.spirit}%</span>`);
+            }
+            if (typeof changes === "string") messages.push(`<span style="color:#FFD700">📖 ${changes}</span>`);
+
+            if (messages.length > 0) {
+                const note = document.getElementById('stat-notification');
+                note.innerHTML = messages.join("<br>");
+                note.style.opacity = 1;
+                setTimeout(() => { note.style.opacity = 0; }, 3000);
+            }
+        }
+
+        function applyStats(effects) {
+            showNotification(effects);
+            state.hunger += (effects.hunger || 0);
+            state.warmth += (effects.warmth || 0);
+            state.spirit += (effects.spirit || 0);
+            state.hunger = Math.max(0, Math.min(100, state.hunger));
+            state.warmth = Math.max(0, Math.min(100, state.warmth));
+            state.spirit = Math.max(0, Math.min(100, state.spirit));
+            updateStatsUI();
+        }
+
         function makeChoice(choice) {
-            document.getElementById('choices-overlay').style.display = 'none'; 
+            document.getElementById('choices-overlay').style.display = 'none';
+            if (state.inIntro === false && document.getElementById('statsContainer').style.display === 'none') {
+                 document.getElementById('statsContainer').style.display = 'flex';
+            }
             if (choice.effects) applyStats(choice.effects);
             showScene(choice.nextScene);
         }
 
-        function applyStats(effects) {
-            if(!effects) return;
-            state.hunger = Math.max(0, Math.min(100, state.hunger + (effects.hunger || 0)));
-            state.warmth = Math.max(0, Math.min(100, state.warmth + (effects.warmth || 0)));
-            state.spirit = Math.max(0, Math.min(100, state.spirit + (effects.spirit || 0)));
-            
-            let msgs = [];
-            if(effects.hunger) msgs.push(`Hunger ${effects.hunger > 0 ? '+' : ''}${effects.hunger}`);
-            if(effects.warmth) msgs.push(`Warmth ${effects.warmth > 0 ? '+' : ''}${effects.warmth}`);
-            if(effects.spirit) msgs.push(`Spirit ${effects.spirit > 0 ? '+' : ''}${effects.spirit}`);
-            
-            if(msgs.length > 0) {
-                const note = document.getElementById('stat-notification');
-                note.innerText = msgs.join(" | ");
-                note.style.opacity = 1;
-                setTimeout(() => note.style.opacity = 0, 3000);
-            }
-            updateStatsUI();
+        function toggleNotebook() {
+            const modal = document.getElementById('notebook-modal');
+            if (modal.style.display === 'block') { modal.style.display = 'none'; }
+            else { renderNotebook(); modal.style.display = 'block'; }
         }
 
-        function checkStats() {
-            if (state.warmth <= 0) showScene("game_over_cold");
-            else if (state.hunger >= 100) showScene("game_over_starve");
-            else if (state.spirit <= 0) showScene("game_over_spirit");
-        }
-
-        function goBack() {
-            if (state.historyStack.length > 0) {
-                const prevScene = state.historyStack.pop();
-                state.currentSceneId = null; 
-                showScene(prevScene);
+        function unlockTerm(termId) {
+            if (!state.unlockedTerms.includes(termId)) {
+                state.unlockedTerms.push(termId);
+                const termName = notebookDB[termId].term;
+                showNotification("Notebook Updated: " + termName);
             }
         }
 
-        function toggleAuto() {
-            state.isAuto = !state.isAuto;
-            state.isSkip = false; 
-            document.getElementById('btn-auto').classList.toggle('active');
-            document.getElementById('btn-skip').classList.remove('active');
-            if (state.isAuto && !state.isTyping) advanceGlobal({target:{tagName:'BODY'}});
+        function renderNotebook() {
+            const contentDiv = document.getElementById('notebook-content');
+            contentDiv.innerHTML = "";
+            if (state.unlockedTerms.length === 0) {
+                contentDiv.innerHTML = '<p style="text-align:center; font-style:italic;">No entries yet.</p>';
+                return;
+            }
+            state.unlockedTerms.forEach(termId => {
+                const entry = notebookDB[termId];
+                const div = document.createElement('div');
+                div.className = 'notebook-entry';
+                div.innerHTML = `<div class="notebook-term">${entry.term}</div><div class="notebook-def">${entry.def}</div>`;
+                contentDiv.appendChild(div);
+            });
         }
 
-        function toggleSkip() {
-            state.isSkip = !state.isSkip;
-            state.isAuto = false;
-            document.getElementById('btn-skip').classList.toggle('active');
-            document.getElementById('btn-auto').classList.remove('active');
-            if (state.isSkip) {
-                typeSpeed = 0; 
-                if(!state.isTyping) advanceGlobal({target:{tagName:'BODY'}});
-            } else {
-                typeSpeed = 25;
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            document.querySelectorAll('audio').forEach(a => a.muted = state.isMuted);
+            document.getElementById('audio-btn').innerText = state.isMuted ? "🔊 Audio: OFF" : "🔊 Audio: ON";
+        }
+
+        function playAudio(trackId) {
+            if (!trackId || state.currentTrack === trackId) return;
+            document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
+            const newTrack = document.getElementById(trackId);
+            if (newTrack) {
+                newTrack.volume = 0.5;
+                newTrack.play().catch(e => console.log("Audio waiting"));
+                state.currentTrack = trackId;
             }
         }
 
-        function addToLog(speaker, text) {
-            state.dialogueLog.push({speaker: speaker || "Narrator", text: text});
-        }
-
-        function toggleLog() {
-            toggleModal('log-modal');
-            const content = document.getElementById('log-content');
-            content.innerHTML = state.dialogueLog.map(e => 
-                `<div class="modal-entry"><span class="log-speaker">${e.speaker}</span>${e.text}</div>`
-            ).join('');
-        }
-
-        function triggerMapScene(id, dur) {
-            state.mapActive = false;
-            document.getElementById('map-layer').style.display = 'none';
-            document.getElementById('dialogue-container').style.opacity = 1;
-            if(dur) state.time += dur;
-            
-            if(state.time >= 12 && !state.lunchEaten && id !== 'scene_lunch') {
-                state.lunchEaten = true; state.time = 12; updateTimeDisplay();
-                showScene('scene_lunch');
-            } else {
-                updateTimeDisplay();
-                showScene(id);
-            }
+        function playSFX(sfxId) {
+            if (state.isMuted) return;
+            const sound = document.getElementById(sfxId);
+            if (sound) { sound.currentTime = 0; sound.play(); }
         }
 
         function updateTimeDisplay() {
             let suffix = state.time >= 12 ? "PM" : "AM";
-            let h = state.time > 12 ? state.time - 12 : state.time;
-            document.getElementById('timeDisplay').innerText = `${h}:00 ${suffix}`;
+            let displayHour = state.time > 12 ? state.time - 12 : state.time;
+            document.getElementById('timeDisplay').innerText = `${displayHour}:00 ${suffix}`;
+        }
+
+        function showMap() {
+            state.mapActive = true;
+            document.getElementById('dialogue-container').style.opacity = 0;
+            document.getElementById('map-layer').style.display = 'block';
+
+            const btnClass = document.getElementById('btn-class');
+            const btnHall = document.getElementById('btn-hallway');
+            const btnWork = document.getElementById('btn-work');
+
+            btnClass.disabled = true;
+            btnHall.disabled = true;
+            btnWork.disabled = true;
+
+            if (state.time < 12) {
+                if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
+                if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
+            }
+            else if (state.lunchEaten) {
+                btnWork.disabled = false;
+            }
+        }
+
+        function hideMap() {
+            state.mapActive = false;
+            document.getElementById('map-layer').style.display = 'none';
+            document.getElementById('dialogue-container').style.opacity = 1;
+        }
+
+        function triggerMapScene(sceneId, duration) {
+            hideMap();
+            if (!state.visitedScenes.includes(sceneId)) state.visitedScenes.push(sceneId);
+            if (duration) { state.time += duration; updateTimeDisplay(); }
+            showScene(sceneId);
+        }
+
+        function returnToMapLogic() {
+            if (state.time >= 12 && !state.lunchEaten) {
+                state.lunchEaten = true;
+                state.time += 1;
+                updateTimeDisplay();
+                showScene('scene_lunch');
+            } else {
+                showMap();
+            }
+        }
+
+        function triggerTimeSkip() {
+            state.inTimeSkip = true;
+            state.waitingForInput = false;
+            document.getElementById('dialogue-container').style.opacity = 0;
+            document.getElementById('statsContainer').style.display = 'none';
+            const overlay = document.getElementById('time-skip-overlay');
+            overlay.classList.add('overlay-active');
+            setTimeout(() => { applyStats({ hunger: 10, spirit: -10, warmth: -15 }); }, 1000);
+            overlay.onclick = function() {
+                overlay.classList.remove('overlay-active');
+                document.getElementById('dialogue-container').style.opacity = 1;
+                document.getElementById('statsContainer').style.display = 'flex';
+                setTimeout(() => { state.inTimeSkip = false; showScene("school_entry"); }, 1500);
+                overlay.onclick = null;
+            };
         }
 
         function updateStatsUI() {
@@ -817,112 +954,32 @@
             document.getElementById('spirit-stat').innerText = state.spirit + "%";
         }
 
-        function setVolume(val) { document.querySelectorAll('audio').forEach(a => a.volume = val); }
-        function toggleMute() {
-            state.isMuted = !state.isMuted;
-            document.querySelectorAll('audio').forEach(a => a.muted = state.isMuted);
-        }
-        function playAudio(id) {
-            if (!id || state.currentTrack === id) return;
-            document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
-            const track = document.getElementById(id);
-            if(track) { track.volume = document.getElementById('volume-slider').value; track.play().catch(e=>{}); state.currentTrack = id; }
-        }
-        function playSFX(id) {
-            if(state.isMuted) return;
-            const sfx = document.getElementById(id);
-            if(sfx) { sfx.volume = document.getElementById('volume-slider').value; sfx.currentTime = 0; sfx.play(); }
-        }
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            if(m.style.display === 'block') m.style.display = 'none';
-            else {
-                if(id === 'notebook-modal') renderNotebook();
-                m.style.display = 'block';
-            }
-        }
-        function unlockTerm(id) {
-            if(!state.unlockedTerms.includes(id)) {
-                state.unlockedTerms.push(id);
-            }
-        }
-        function renderNotebook() {
-            const d = document.getElementById('notebook-content');
-            d.innerHTML = state.unlockedTerms.length ? state.unlockedTerms.map(id => 
-                `<div class="notebook-entry"><div class="notebook-term">${notebookDB[id].term}</div><div class="notebook-def">${notebookDB[id].def}</div></div>`
-            ).join('') : '<p style="text-align:center;">Play to unlock.</p>';
-        }
-
-        function triggerTimeSkip() {
-            state.inTimeSkip = true;
-            state.waitingForInput = false;
-            document.getElementById('dialogue-container').style.opacity = 0;
-            document.getElementById('statsContainer').style.display = 'none'; 
-            const overlay = document.getElementById('time-skip-overlay');
-            overlay.classList.add('overlay-active');
-            setTimeout(() => {
-                applyStats({ hunger: 10, spirit: -10, warmth: -15 });
-                document.getElementById('time-skip-overlay').classList.remove('overlay-active');
-                document.getElementById('dialogue-container').style.opacity = 1;
-                document.getElementById('statsContainer').style.display = 'flex'; 
-                setTimeout(() => { state.inTimeSkip = false; showScene("school_entry"); }, 1500);
-                overlay.onclick = null; 
-            }, 1500);
-        }
-
         function advanceGlobal(e) {
-            if (e.target.tagName === 'BUTTON' || state.mapActive || state.inTimeSkip) return;
-            
+            if (e.target.tagName === 'BUTTON') return;
+            if (state.inTimeSkip || state.mapActive) return;
             if (state.inIntro) { playIntroNext(); return; }
 
             if (state.isTyping) {
                 clearTypewriter();
-                document.getElementById('story-text').innerHTML = state.currentScene.text.replace("[Name]",state.name);
+                state.waitingForInput = true;
+                let txt = state.currentScene.text.replace("[Name]", state.name);
+                document.getElementById('story-text').innerHTML = txt;
                 return;
             }
 
             if (state.waitingForInput) {
-                const sc = state.currentScene;
-                if (sc.specialAction === "triggerTimeSkip") triggerTimeSkip();
-                else if (sc.specialAction === "triggerMap") { 
-                    state.mapActive = true; 
-                    document.getElementById('map-layer').style.display = 'block';
-                    document.getElementById('dialogue-container').style.opacity = 0;
-                    
-                    const btnClass = document.getElementById('btn-class');
-                    const btnHall = document.getElementById('btn-hallway');
-                    const btnWork = document.getElementById('btn-work');
-                    btnClass.disabled = true; btnHall.disabled = true; btnWork.disabled = true;
-                    
-                    if (state.time < 12) {
-                        if (state.time <= 9 && !state.visitedScenes.includes('scene_class_start')) btnClass.disabled = false;
-                        if (state.time < 12 && !state.visitedScenes.includes('scene_hallway_start')) btnHall.disabled = false;
-                    } else if (state.lunchEaten) {
-                        btnWork.disabled = false;
-                    }
-                }
-                else if (sc.specialAction === "returnToMap") {
-                    if (state.time >= 12 && !state.lunchEaten) {
-                        state.lunchEaten = true; state.time = 12; updateTimeDisplay();
-                        showScene("scene_lunch");
-                    } else {
-                        sc.specialAction = "triggerMap"; advanceGlobal(e);
-                    }
-                }
-                else if (sc.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
-                else if (sc.choices) { presentChoices(sc); state.waitingForInput = false; }
-                else if (sc.nextScene) { showScene(sc.nextScene); }
+                if (state.currentScene.specialAction === "triggerTimeSkip") triggerTimeSkip();
+                else if (state.currentScene.specialAction === "triggerMap") showMap();
+                else if (state.currentScene.specialAction === "returnToMap") returnToMapLogic();
+                else if (state.currentScene.specialAction === "checkGenderHallway") showScene("checkGenderHallway");
+                else if (state.currentScene.choices) { presentChoices(state.currentScene); state.waitingForInput = false; }
+                else if (state.currentScene.nextScene) showScene(state.currentScene.nextScene);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.body.addEventListener('click', advanceGlobal);
-            document.body.addEventListener('keydown', (e) => { 
-                if (e.code === 'Space') advanceGlobal(e);
-                if (e.key === 'Control') toggleSkip(); 
-            });
-            setTimeout(() => typeWriter(introSequence[0], 'story-text'), 500);
-        });
+        document.body.addEventListener('click', advanceGlobal);
+        document.body.addEventListener('keydown', (e) => { if (e.code === 'Space') advanceGlobal(e); });
+        typeWriter(introSequence[0], 'story-text');
 
     </script>
 </body>
