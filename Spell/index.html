@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SpellCast (Standalone)</title>
+    <style>
+        :root { --bg: #1e272e; --tile: #ecf0f1; --accent: #ff5e57; --gem: #a29bfe; --selected: #f1c40f; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+        
+        /* HEADER & HUD */
+        h1 { margin: 10px 0; font-size: 2rem; color: var(--accent); }
+        #hud { display: flex; gap: 40px; background: rgba(0,0,0,0.3); padding: 15px 30px; border-radius: 15px; margin-bottom: 20px; width: 400px; justify-content: space-between; }
+        .p-card { text-align: center; }
+        .score { font-size: 1.5rem; font-weight: bold; display: block; }
+        .gems { font-size: 1rem; color: var(--gem); }
+        .turn-marker { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; opacity: 0; transition: 0.3s; }
+        .active .turn-marker { opacity: 1; color: #2ecc71; }
+
+        /* GRID */
+        #game-board { 
+            display: grid; 
+            grid-template-columns: repeat(5, 70px); 
+            grid-template-rows: repeat(5, 70px); 
+            gap: 8px; 
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .tile {
+            background: var(--tile);
+            border-radius: 8px;
+            display: flex; 
+            justify-content: center; align-items: center;
+            font-size: 2rem; font-weight: 800; color: #2d3436;
+            cursor: pointer; position: relative;
+            transition: transform 0.1s, background 0.2s;
+            user-select: none;
+        }
+        .tile:hover { transform: scale(1.05); }
+        .tile.selected { background: var(--selected); transform: scale(0.95); box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
+        .tile.used { background: #95a5a6; color: #7f8c8d; cursor: default; }
+
+        /* BADGES (Multipliers & Gems) */
+        .badge { position: absolute; font-size: 0.7rem; font-weight: bold; bottom: 2px; right: 4px; color: #555; }
+        .gem-marker { position: absolute; top: 2px; left: 4px; font-size: 0.8rem; }
+        
+        /* CONTROLS */
+        #word-display { height: 40px; margin: 20px 0; font-size: 2rem; letter-spacing: 3px; border-bottom: 2px solid #555; min-width: 200px; text-align: center; }
+        #controls { display: flex; gap: 10px; }
+        button { padding: 12px 24px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-submit { background: #2ecc71; color: white; }
+        .btn-submit:hover { background: #27ae60; }
+        .btn-clear { background: #e74c3c; color: white; }
+        .btn-shuffle { background: var(--gem); color: white; }
+        
+        #message { margin-top: 15px; height: 20px; color: #f39c12; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>SpellCast</h1>
+
+    <div id="hud">
+        <div class="p-card" id="p1-card">
+            <span>Player 1</span>
+            <span class="score" id="p1-score">0</span>
+            <span class="gems">💎 <span id="p1-gems">3</span></span>
+            <div class="turn-marker">YOUR TURN</div>
+        </div>
+        <div class="p-card" id="p2-card">
+            <span>Player 2</span>
+            <span class="score" id="p2-score">0</span>
+            <span class="gems">💎 <span id="p2-gems">3</span></span>
+            <div class="turn-marker">THINKING...</div>
+        </div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <div id="word-display"></div>
+    <div id="message"></div>
+
+    <div id="controls">
+        <button class="btn-clear" onclick="clearSelection()">Clear</button>
+        <button class="btn-shuffle" onclick="shuffleBoard()">Shuffle (1💎)</button>
+        <button class="btn-submit" onclick="submitWord()">SUBMIT</button>
+    </div>
+
+<script>
+    // --- CONFIGURATION ---
+    const LETTER_POOL = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
+    const SCORES = { A:1, E:1, I:1, O:1, N:2, R:2, S:2, T:2, D:3, G:3, L:3, B:4, H:4, P:4, M:4, U:4, Y:4, C:5, F:5, V:5, W:5, K:6, J:7, X:7, Q:8, Z:8 };
+    
+    // --- STATE ---
+    let grid = []; // 5x5 array of objects { letter, mult, hasGem }
+    let selectedPath = []; // Array of {r, c}
+    let p1 = { score: 0, gems: 3 };
+    let p2 = { score: 0, gems: 3 };
+    let turn = 1; // 1 or 2
+
+    // --- INIT ---
+    function initGame() {
+        generateGrid();
+        renderBoard();
+        updateHUD();
+    }
+
+    function generateGrid() {
+        grid = [];
+        let pool = LETTER_POOL.split('');
+        
+        // 1. Create Grid
+        for(let r=0; r<5; r++) {
+            let row = [];
+            for(let c=0; c<5; c++) {
+                const randIndex = Math.floor(Math.random() * pool.length);
+                row.push({ 
+                    letter: pool[randIndex], 
+                    mult: null, 
+                    hasGem: false 
+                });
+            }
+            grid.push(row);
+        }
+
+        // 2. Add Multipliers (Random positions)
+        const coords = [];
+        for(let r=0; r<5; r++) for(let c=0; c<5; c++) coords.push({r,c});
+        coords.sort(() => Math.random() - 0.5); // Shuffle
+
+        grid[coords[0].r][coords[0].c].mult = "2W";
+        grid[coords[1].r][coords[1].c].mult = "TL";
+        grid[coords[2].r][coords[2].c].mult = "TL";
+        grid[coords[3].r][coords[3].c].mult = "DL";
+        grid[coords[4].r][coords[4].c].mult = "DL";
+        
+        // 3. Add Gems
+        for(let i=5; i<9; i++) grid[coords[i].r][coords[i].c].hasGem = true;
+    }
+
+    // --- RENDER ---
+    function renderBoard() {
+        const board = document.getElementById('game-board');
+        board.innerHTML = '';
+        grid.forEach((row, r) => {
+            row.forEach((cell, c) => {
+                const el = document.createElement('div');
+                el.className = 'tile';
+                el.innerText = cell.letter;
+                
+                if (cell.mult) el.innerHTML += `<span class='badge'>${cell.mult}</span>`;
+                if (cell.hasGem) el.innerHTML += `<span class='gem-marker'>💎</span>`;
+                
+                // Check if selected
+                if (selectedPath.some(p => p.r === r && p.c === c)) el.classList.add('selected');
+
+                el.onclick = () => handleInput(r, c);
+                board.appendChild(el);
+            });
+        });
+    }
+
+    function updateHUD() {
+        document.getElementById('p1-score').innerText = p1.score;
+        document.getElementById('p1-gems').innerText = p1.gems;
+        document.getElementById('p2-score').innerText = p2.score;
+        document.getElementById('p2-gems').innerText = p2.gems;
+        
+        document.getElementById('p1-card').className = turn === 1 ? "p-card active" : "p-card";
+        document.getElementById('p2-card').className = turn === 2 ? "p-card active" : "p-card";
+    }
+
+    // --- INTERACTION ---
+    function handleInput(r, c) {
+        // Validation: Undo if clicking last tile
+        const last = selectedPath[selectedPath.length-1];
+        if (last && last.r === r && last.c === c) {
+            selectedPath.pop();
+            renderBoard();
+            updatePreview();
+            return;
+        }
+
+        // Validation: Adjacency & Uniqueness
+        if (selectedPath.some(p => p.r === r && p.c === c)) return; // Already used
+        if (last) {
+            if (Math.abs(last.r - r) > 1 || Math.abs(last.c - c) > 1) return; // Not adjacent
+        }
+
+        selectedPath.push({r, c});
+        renderBoard();
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const word = selectedPath.map(p => grid[p.r][p.c].letter).join('');
+        document.getElementById('word-display').innerText = word;
+    }
+
+    function clearSelection() {
+        selectedPath = [];
+        renderBoard();
+        updatePreview();
+        document.getElementById('message').innerText = "";
+    }
+
+    function shuffleBoard() {
+        let player = turn === 1 ? p1 : p2;
+        if (player.gems < 1) {
+            showMessage("Not enough gems!");
+            return;
+        }
+        player.gems--;
+        
+        // Shuffle letters only (keep mults/gems in place)
+        let flat = [];
+        grid.forEach(row => row.forEach(c => flat.push(c.letter)));
+        flat.sort(() => Math.random() - 0.5);
+        
+        let i = 0;
+        grid.forEach(row => row.forEach(c => { c.letter = flat[i++]; }));
+        
+        clearSelection();
+        renderBoard();
+        updateHUD();
+        showMessage("Board Shuffled!");
+    }
+
+    function submitWord() {
+        if (selectedPath.length < 2) return;
+        
+        // Calculate Score
+        let wordScore = 0;
+        let wordMult = 1;
+        let gemsEarned = 0;
+
+        selectedPath.forEach(p => {
+            let cell = grid[p.r][p.c];
+            let val = SCORES[cell.letter];
+            
+            if (cell.mult === 'DL') val *= 2;
+            if (cell.mult === 'TL') val *= 3;
+            if (cell.mult === '2W') wordMult *= 2;
+            if (cell.hasGem) gemsEarned++;
+            
+            wordScore += val;
+        });
+
+        if (selectedPath.length >= 6) wordScore += 10;
+        let total = wordScore * wordMult;
+
+        // Apply to Player
+        let player = turn === 1 ? p1 : p2;
+        player.score += total;
+        player.gems += gemsEarned;
+
+        showMessage(`Played for ${total} pts!`);
+        
+        // Reset & Switch Turn
+        selectedPath = [];
+        turn = turn === 1 ? 2 : 1;
+        
+        renderBoard();
+        updateHUD();
+    }
+
+    function showMessage(msg) {
+        document.getElementById('message').innerText = msg;
+        setTimeout(() => document.getElementById('message').innerText = "", 2000);
+    }
+
+    // Start
+    initGame();
+
+</script>
+</body>
+</html>
