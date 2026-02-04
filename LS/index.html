@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lincoln's Historic Architecture | Infographic</title>
+    <style>
+        /* General Page Styling */
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background-color: #eeeeee;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Infographic Container */
+        .infographic-card {
+            max-width: 600px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-top: 8px solid #d0312d; /* Husker Red Accent */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #d0312d;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Timeline Logic */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        /* Vertical Line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 45px;
+        }
+
+        /* The Dot */
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -41px;
+            top: 6px;
+            width: 14px;
+            height: 14px;
+            background-color: #fff;
+            border: 4px solid #d0312d;
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .year-badge {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .content h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.4rem;
+            color: #222;
+        }
+
+        .subtitle {
+            font-weight: 600;
+            color: #d0312d;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .description {
+            line-height: 1.6;
+            color: #444;
+            font-size: 1rem;
+        }
+
+        /* Highlighting the Lewis Syford House */
+        .highlight-box {
+            background-color: #fff9f9;
+            padding: 20px;
+            border: 1px solid #f5caca;
+            border-radius: 8px;
+            margin-left: -10px;
+            box-shadow: 0 4px 12px rgba(208, 49, 45, 0.05);
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .infographic-card { padding: 20px; }
+            .header h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="infographic-card">
+        <header class="header">
+            <h1>Lincoln's Architectural Pioneers</h1>
+            <p>The oldest remaining structures in the Star City</p>
+        </header>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="year-badge">1869</div>
+                <div class="content">
+                    <h2>Thomas P. Kennard House</h2>
+                    <div class="subtitle">Nebraska Statehood Memorial</div>
+                    <p class="description">The oldest remaining building in Lincoln’s original plat. Built for Nebraska’s first Secretary of State to prove the city’s viability as a capital.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="year-badge">1878</div>
+                <div class="content highlight-box">
+                    <h2>Lewis Syford House</h2>
+                    <div class="subtitle">Second-Empire Style Gem</div>
+                    <p class="description">A rare example of 1870s residential architecture in Lincoln, preserved as a testament to the city’s early growth and expansion.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="year-badge">1892</div>
+                <div class="content">
+                    <h2>Architecture Hall</h2>
+                    <div class="subtitle">UNL City Campus</div>
+                    <p class="description">The oldest surviving building on the University of Nebraska-Lincoln campus. Originally built as the university library, it now anchors the College of Architecture.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Data curated for the Lewis Syford House feature story.
+        </footer>
+    </div>
+
+</body>
+</html>
