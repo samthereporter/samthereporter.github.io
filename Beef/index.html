@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cattle Operation Economics Dashboard (2025)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: var(--primary);
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .form-group input {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: right;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #444;
+        }
+        .result-row.total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+            margin-top: 10px;
+            color: var(--primary);
+        }
+        .result-row.grand-total {
+            font-size: 1.4rem;
+            color: var(--success);
+            border-top: 3px solid var(--success);
+        }
+        .breakeven-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .breakeven-table th, .breakeven-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: center;
+        }
+        .breakeven-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        .breakeven-table td {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--success);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Cattle Operation Economics Dashboard</h1>
+    <p>Interactive Cost & Breakeven Calculator (2025)</p>
+</div>
+
+<div class="container">
+    <!-- Left Column: Inputs -->
+    <div class="input-section">
+        <div class="card">
+            <h2 class="section-title">1. Feed Costs ($/Head)</h2>
+            <div class="form-group">
+                <label>Mature Cows (84% of herd)</label>
+                <input type="number" id="feedMature" value="668.00" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>2-Yr-Old Heifers (16% of herd)</label>
+                <input type="number" id="feed2Yr" value="711.25" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Replacement Heifers (20% exposed)</label>
+                <input type="number" id="feedRepl" value="446.50" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Bulls (1 per 30 females)</label>
+                <input type="number" id="feedBull" value="650.00" step="1" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">2. Operating & Ownership Costs</h2>
+            <div class="form-group">
+                <label>Other Cash Costs (Vet, Equip, etc.)</label>
+                <input type="number" id="costOther" value="200.00" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Labor Hours per Year</label>
+                <input type="number" id="laborHours" value="5.5" step="0.1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Labor Rate ($/hr)</label>
+                <input type="number" id="laborRate" value="27.00" step="1" oninput="calculate()">
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            <div class="form-group">
+                <label>Interest on Cattle Value</label>
+                <input type="number" id="ownInterest" value="180.00" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Bull Depreciation</label>
+                <input type="number" id="ownBullDep" value="54.17" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Taxes and Insurance</label>
+                <input type="number" id="ownTaxes" value="30.00" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Equipment/Facilities Deprec.</label>
+                <input type="number" id="ownEquipDep" value="70.00" step="1" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">3. Herd Dynamics & Credits</h2>
+            <div class="form-group">
+                <label>Total Cull Credits</label>
+                <input type="number" id="cullCredits" value="404.46" step="1" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label>Capital Cost of Rep. Heifer</label>
+                <input type="number" id="capCostHeifer" value="410.00" step="1" oninput="calculate()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Results & Visuals -->
+    <div class="results-section">
+        <div class="card">
+            <h2 class="section-title">Cost Summary Per Cow</h2>
+            
+            <div class="result-row">
+                <span>Weighted Feed Cost:</span>
+                <span id="outFeedCost">$0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Labor Cost:</span>
+                <span id="outLaborCost">$0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Other Operating Costs:</span>
+                <span id="outOtherCost">$0.00</span>
+            </div>
+            <div class="result-row total">
+                <span>Total Operating Costs:</span>
+                <span id="outTotalOperating">$0.00</span>
+            </div>
+            
+            <div class="result-row" style="margin-top: 15px;">
+                <span>Total Ownership Costs:</span>
+                <span id="outTotalOwnership">$0.00</span>
+            </div>
+            <div class="result-row">
+                <span>Net Capital Cost (Heifer - Cull):</span>
+                <span id="outNetCapital">$0.00</span>
+            </div>
+            
+            <div class="result-row total grand-total">
+                <span>Net Cost Per Cow:</span>
+                <span id="outNetCost">$0.00</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Breakeven Sensitivity Analysis</h2>
+            <p style="font-size: 0.9rem; color: #666; margin-top: -10px;">Required revenue per calf weaned to cover Net Cost Per Cow.</p>
+            <table class="breakeven-table">
+                <thead>
+                    <tr>
+                        <th>80% Weaning Rate</th>
+                        <th>85% Weaning Rate</th>
+                        <th>90% Weaning Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="break80">$0.00</td>
+                        <td id="break85">$0.00</td>
+                        <td id="break90">$0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Cost Breakdown</h2>
+            <div class="chart-container">
+                <canvas id="costChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize Chart
+    let costChart;
+    const ctx = document.getElementById('costChart').getContext('2d');
+    
+    function initChart() {
+        costChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Feed Costs', 'Labor', 'Other Ops', 'Ownership', 'Net Capital'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right' }
+                }
+            }
+        });
+    }
+
+    function fmt(num) {
+        return '$' + num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function calculate() {
+        // 1. Get Feed Values
+        const feedMature = parseFloat(document.getElementById('feedMature').value) || 0;
+        const feed2Yr = parseFloat(document.getElementById('feed2Yr').value) || 0;
+        const feedRepl = parseFloat(document.getElementById('feedRepl').value) || 0;
+        const feedBull = parseFloat(document.getElementById('feedBull').value) || 0;
+
+        // Weighted Feed Calculation (from prompt data)
+        const weightedFeed = (0.84 * feedMature) + (0.16 * feed2Yr) + (0.20 * feedRepl) + (0.04 * feedBull);
+
+        // 2. Get Operating Values
+        const costOther = parseFloat(document.getElementById('costOther').value) || 0;
+        const laborHours = parseFloat(document.getElementById('laborHours').value) || 0;
+        const laborRate = parseFloat(document.getElementById('laborRate').value) || 0;
+        const laborTotal = laborHours * laborRate;
+
+        const totalOperating = weightedFeed + costOther + laborTotal;
+
+        // 3. Get Ownership Values
+        const ownInterest = parseFloat(document.getElementById('ownInterest').value) || 0;
+        const ownBullDep = parseFloat(document.getElementById('ownBullDep').value) || 0;
+        const ownTaxes = parseFloat(document.getElementById('ownTaxes').value) || 0;
+        const ownEquipDep = parseFloat(document.getElementById('ownEquipDep').value) || 0;
+        
+        const totalOwnership = ownInterest + ownBullDep + ownTaxes + ownEquipDep;
+
+        // 4. Herd Dynamics
+        const cullCredits = parseFloat(document.getElementById('cullCredits').value) || 0;
+        const capCostHeifer = parseFloat(document.getElementById('capCostHeifer').value) || 0;
+        
+        const netCapital = capCostHeifer - cullCredits;
+
+        // 5. Grand Totals
+        const totalCostsExclCull = totalOperating + totalOwnership;
+        const netCostPerCow = totalCostsExclCull + netCapital;
+
+        // Update DOM
+        document.getElementById('outFeedCost').innerText = fmt(weightedFeed);
+        document.getElementById('outLaborCost').innerText = fmt(laborTotal);
+        document.getElementById('outOtherCost').innerText = fmt(costOther);
+        document.getElementById('outTotalOperating').innerText = fmt(totalOperating);
+        document.getElementById('outTotalOwnership').innerText = fmt(totalOwnership);
+        document.getElementById('outNetCapital').innerText = fmt(netCapital);
+        document.getElementById('outNetCost').innerText = fmt(netCostPerCow);
+
+        // Update Breakeven
+        document.getElementById('break80').innerText = fmt(netCostPerCow / 0.80);
+        document.getElementById('break85').innerText = fmt(netCostPerCow / 0.85);
+        document.getElementById('break90').innerText = fmt(netCostPerCow / 0.90);
+
+        // Update Chart
+        costChart.data.datasets[0].data = [
+            Math.max(0, weightedFeed),
+            Math.max(0, laborTotal),
+            Math.max(0, costOther),
+            Math.max(0, totalOwnership),
+            Math.max(0, netCapital)
+        ];
+        costChart.update();
+    }
+
+    // Initialize on load
+    window.onload = function() {
+        initChart();
+        calculate();
+    };
+</script>
+</body>
+</html>
