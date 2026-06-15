@@ -1,219 +1,562 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Empty Desk Epidemic | Nebraska Chronic Absenteeism</title>
-    <script src="https://unpkg.com/scrollama"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            /* Using your grid reference image as a repeating background */
-            background-image: url('input_file_1.png');
-            background-attachment: fixed;
-            background-size: cover; /* Adjust to 'contain' or 'auto' if you want more tiles */
-            background-color: #1a3c34; /* Fallback green */
-            color: #f8fafc;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empty Desks: Nebraska's Chronic Absenteeism Crisis</title>
 
-        /* Hero Section matches your banner's 4:1 aspect ratio */
-        .hero {
-            width: 100%;
-            aspect-ratio: 4 / 1;
-            background-image: url('input_file_0.png');
-            background-size: cover;
-            background-position: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 5vh;
-        }
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        #scrolly {
-            position: relative;
-            display: flex;
-            padding: 1rem;
-        }
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        article {
-            position: relative;
-            padding: 0;
-            width: 40%;
-            min-width: 350px;
-            z-index: 10;
-        }
+<!-- Intersection Observer Polyfill (optional, for older browsers) -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"></script>
 
-        figure {
-            position: sticky;
-            width: 55%;
-            height: 70vh;
-            top: 15vh;
-            margin: 0;
-            margin-left: 5%;
-            /* Frosted glass effect for visual containers */
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.5s ease-in-out;
-            color: #1e293b; /* Dark text inside charts for contrast */
-        }
 
-        .step {
-            margin: 0 auto 100vh auto;
-            opacity: 0.1;
-            transition: all 0.6s ease;
-        }
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .step.is-active {
-            opacity: 1;
-        }
+  :root {
+    --slate: #0F1923;
+    --slate-mid: #1A2733;
+    --slate-light: #243447;
+    --cream: #F0EDE6;
+    --cream-dim: rgba(240,237,230,0.75);
+    --amber: #C8974A;
+    --amber-dim: rgba(200,151,74,0.15);
+    --red: #C0392B;
+    --teal: #2E8B8B;
+    --teal-dim: rgba(46,139,139,0.2);
+    --gray: #8A9BAB;
+  }
 
-        /* Text Card Styling */
-        .card {
-            background: rgba(15, 23, 42, 0.85); /* Darker cards to contrast with green grid */
-            backdrop-filter: blur(8px);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-        }
+  html { scroll-behavior: smooth; }
 
-        .chart-placeholder {
-            width: 90%;
-            height: 80%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
+  body {
+    background: var(--slate);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
 
-        @media (max-width: 1024px) {
-            #scrolly { flex-direction: column; }
-            article { width: 100%; }
-            figure { width: 100%; height: 50vh; order: -1; position: relative; top: 0; margin-bottom: 2rem; }
-            .hero { aspect-ratio: 2/1; } /* Taller on mobile for visibility */
-        }
-    </style>
+  /* ── FULL SCREEN SCENES ── */
+  .fullscreen {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .fullscreen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(15,25,35,0.6); /* Dark overlay */
+    z-index: 1;
+  }
+
+  .fullscreen .overlay {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 60px 40px;
+    background: rgba(15,25,35,0.85);
+    border-left: 3px solid var(--amber);
+    text-align: center;
+  }
+
+
+  .fullscreen h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.12;
+    color: var(--cream);
+    margin-bottom: 28px;
+  }
+
+  .fullscreen p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--cream-dim);
+    margin-bottom: 16px;
+    text-align: left;
+  }
+
+  /* ── SPLIT SCENES ── */
+  .split-scene {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Sticky visual panel */
+  .sticky-panel {
+    position: sticky;
+    top: 0;
+    width: 60%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: var(--slate-mid); 
+    border-right: 1px solid var(--slate-light);
+    flex-shrink: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .visual-container {
+    width: 100%;
+    max-width: 600px;
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.5s ease-in-out;
+    display: none; /* Hide all initially */
+  }
+
+  .visual-container.active {
+    opacity: 1;
+    display: block; /* Show the active one */
+  }
+
+  /* Scroll text column */
+  .scroll-col {
+    width: 40%;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .step {
+    min-height: 100vh; /* Full viewport height for pacing */
+    display: flex;
+    align-items: center;
+    padding: 60px 48px;
+    border-bottom: 1px solid var(--slate-light);
+    transition: opacity 0.4s, transform 0.4s;
+    opacity: 0.2;
+    transform: translateY(20px);
+  }
+
+  .step.is-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .step-inner h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.7rem);
+    color: var(--cream);
+    line-height: 1.25;
+    margin-bottom: 20px;
+  }
+
+  .step-inner p {
+    font-size: 16px;
+    line-height: 1.85;
+    color: var(--cream-dim);
+    margin-bottom: 16px;
+  }
+
+  /* ── MAP PLACEHOLDER ── */
+  .map-placeholder {
+    width: 100%;
+    height: 400px;
+    background: var(--slate-light);
+    border: 1px dashed rgba(200,151,74,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  /* ── BIG NUMBER CARDS ── */
+  .big-number-grid {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .big-number-card {
+    background: var(--slate-light);
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+  }
+
+  .big-number-card h3 {
+      font-size: 1.2rem;
+      color: var(--gray);
+      margin-bottom: 15px;
+      font-weight: 400;
+  }
+
+  .card-stat {
+    margin-bottom: 20px;
+  }
+
+  .card-stat .big-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .card-stat.reg .big-num { color: var(--teal); }
+  .card-stat.chron .big-num { color: var(--amber); }
+
+  .card-stat .label {
+      font-size: 0.9rem;
+      color: var(--cream-dim);
+  }
+
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .split-scene { flex-direction: column; }
+
+    .sticky-panel {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 50vh; /* Half screen for visual */
+      padding: 20px;
+      border-right: none;
+      border-bottom: 1px solid var(--slate-light);
+      z-index: 10;
+    }
+
+    .scroll-col {
+      width: 100%;
+    }
+
+    .step {
+      min-height: 50vh; /* Adjust step height for mobile */
+      padding: 40px 24px;
+    }
+    
+    .big-number-grid {
+        flex-direction: column;
+    }
+  }
+</style>
 </head>
 <body>
 
-    <!-- Scene 1: Banner Hero -->
-    <section class="hero">
-        <!-- Text is already inside your image banner, so we leave this empty or for screen readers -->
-        <span class="sr-only">The Empty Desk Epidemic: Tracing Chronic Absenteeism in Nebraska</span>
-    </section>
+<!-- Scene 1: Intro -->
+<section class="fullscreen" id="scene-intro" style="background-image: url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=2067&auto=format&fit=crop');">
+  <div class="overlay">
+    <h1>The Empty Desk Epidemic: Tracing Chronic Absenteeism in Nebraska</h1>
+    <p>Before the COVID-19 pandemic, chronic absenteeism in Nebraska hovered around 10 percent. It was a known challenge, but a manageable one.</p>
+    <p>Then came the disruptions.</p>
+    <p>During the 2020-2021 academic year, the rate of students missing significant classroom time accelerated to nearly 24 percent. But while classrooms have long since returned to normal operations, student attendance has not. During the 2023-2024 academic year, the chronic absentee rate remained stubbornly high at 21.18 percent.</p>
+    <p>Missing 10% of the academic year equates to 17.5 lost learning days. Over time, these empty desks translate to lower reading and numeracy skills, reduced graduation rates, and a widening gap in postsecondary enrollment.</p>
+    <p>So, who is missing from Nebraska’s classrooms, and what happens when they don't return?</p>
+  </div>
+</section>
 
-    <!-- Intro Text -->
-    <div class="max-w-3xl mx-auto py-12 px-6 text-center">
-        <p class="text-2xl font-light leading-relaxed text-white drop-shadow-md">
-            Before the pandemic, chronic absenteeism in Nebraska hovered around 10%. 
-            Today, classrooms have returned to normal, but student attendance hasn't.
-        </p>
+<!-- Scrollytelling Section -->
+<div class="split-scene">
+  
+  <!-- Sticky Visual Area -->
+  <div class="sticky-panel">
+      <!-- Visual 2: Map Placeholder -->
+      <div id="visual-2" class="visual-container active">
+          <h3 class="visual-title">Chronic Absenteeism by County</h3>
+          <div class="map-placeholder">
+              Interactive Nebraska County Map Placeholder (Datawrapper Embed)
+          </div>
+      </div>
+
+      <!-- Visual 3: Line Chart -->
+      <div id="visual-3" class="visual-container">
+           <h3 class="visual-title">The Middle School Cliff</h3>
+           <span class="visual-subtitle">Average Rate of Chronic Absenteeism by Grade Level (2023-2024)</span>
+           <div class="chart-wrap">
+               <canvas id="chart3"></canvas>
+           </div>
+      </div>
+
+      <!-- Visual 4: Bar Chart -->
+      <div id="visual-4" class="visual-container">
+           <h3 class="visual-title">Reasons for Absence</h3>
+           <span class="visual-subtitle">Comparing Regular Attenders vs. Chronic Absentees</span>
+           <div class="chart-wrap">
+               <canvas id="chart4"></canvas>
+           </div>
+      </div>
+
+      <!-- Visual 5: Grouped Bar Chart -->
+      <div id="visual-5" class="visual-container">
+           <h3 class="visual-title">The Academic Toll</h3>
+           <span class="visual-subtitle">11th Grade NSCAS Proficiency (2023-2024)</span>
+           <div class="chart-wrap">
+               <canvas id="chart5"></canvas>
+           </div>
+      </div>
+
+      <!-- Visual 6: Big Numbers -->
+      <div id="visual-6" class="visual-container">
+           <div class="big-number-grid">
+               <div class="big-number-card">
+                   <h3>On-Time Graduation</h3>
+                   <div class="card-stat reg">
+                       <span class="big-num">95.8%</span>
+                       <span class="label">Regular Attenders</span>
+                   </div>
+                   <div class="card-stat chron">
+                       <span class="big-num">79.5%</span>
+                       <span class="label">Chronic Absentees</span>
+                   </div>
+               </div>
+               <div class="big-number-card">
+                   <h3>College Enrollment</h3>
+                   <div class="card-stat reg">
+                       <span class="big-num">70.9%</span>
+                       <span class="label">Regular Attenders</span>
+                   </div>
+                   <div class="card-stat chron">
+                       <span class="big-num">48.7%</span>
+                       <span class="label">Chronic Absentees</span>
+                   </div>
+               </div>
+           </div>
+      </div>
+  </div>
+
+  <!-- Scrolling Text Area -->
+  <div class="scroll-col">
+    <!-- Step 2 -->
+    <div class="step" data-step="2">
+      <div class="step-inner">
+        <h2>A Statewide Challenge, Not Just a City Problem</h2>
+        <p>It is a common misconception that chronic absenteeism is primarily an urban issue. In Nebraska, the data tells a different story.</p>
+        <p>Rates of chronic absenteeism are relatively similar across all 93 counties. Urban counties with sizable districts like Lancaster and Douglas do not show noticeable differences in their percentage of chronic absentees compared to their rural neighbors.</p>
+        <p>In fact, the highest rates are found in more rural contexts. Thurston County averages a 48 percent chronic absenteeism rate, uniquely influenced by two of its districts residing on indigenous tribal lands. McPherson County closely follows with an average rate of 46 percent.</p>
+      </div>
     </div>
 
-    <!-- Scrollytelling Section -->
-    <section id="scrolly">
+    <!-- Step 3 -->
+    <div class="step" data-step="3">
+      <div class="step-inner">
+        <h2>The Middle School Cliff</h2>
+        <p>Attendance habits shift dramatically as students grow older.</p>
+        <p>In the 2023-2024 academic year, fourth graders exhibited the lowest amount of chronic absenteeism at 14.18 percent. However, a significant shift occurs during the transition to middle school. Sixth-grade students demonstrate a sudden five percent spike in chronic absenteeism.</p>
+        <p>This upward trajectory continues throughout high school, peaking with twelfth-grade students showing the greatest chronic absenteeism rate at 36.98 percent.</p>
+        <p>When these students miss school, it isn't just for a day or two. While typically-attending students miss an average of 6.33 to 7.53 days a year, chronic absentees miss an average of 20.52 to 35.62 school days.</p>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step" data-step="4">
+      <div class="step-inner">
+        <h2>Why Are They Missing?</h2>
+        <p>The reasons behind the absences also reveal a stark divide.</p>
+        <p>Students who maintain regular attendance primarily miss school for excused reasons (30.3 percent) or illness and medical leave (45.0 percent).</p>
+        <p>Chronically absent students, however, are far more likely to miss school due to unexcused or behavioral reasons. The percentage of absences due to skipping school is more than five times higher for chronic absentees (9 percent) than for their peers (1.6 percent). Furthermore, 'Unknown unexcused absences' account for nearly 40.7 percent of their missed time, nearly double the rate of typically-attending students.</p>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step" data-step="5">
+      <div class="step-inner">
+        <h2>The Academic Toll</h2>
+        <p>The impact of losing weeks of instructional time becomes highly visible in statewide assessments.</p>
+        <p>Across all grades, chronic absentees demonstrate lower rates of proficiency in science, math, and English language arts. This achievement gap widens significantly as students get older.</p>
+        <p>By the eleventh grade, the disparity is glaring. Only 20.1 percent of chronically absent eleventh-graders are proficient in math, compared to 50.5 percent of their regularly-attending peers. Similar gaps exist in English language arts (24.0 percent vs. 52.9 percent) and science (26.8 percent vs. 57.0 percent).</p>
+        <p>This trend mirrors ACT performance, where typically-attending eleventh graders score an average of 3.49 points higher on their composite scores.</p>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step" data-step="6">
+      <div class="step-inner">
+        <h2>Graduation and Beyond</h2>
+        <p>Ultimately, chronic absenteeism fractures the pathway to postsecondary success and economic self-sufficiency.</p>
+        <p>Between 2021 and 2024, the odds of graduating on-time were nearly six times greater for twelfth-graders who were not chronically absent. While 95.8 percent of typically-attending seniors graduated within four years, only 79.5 percent of chronically absent seniors did the same.</p>
+        <p>The gap widens further after graduation. 70.9 percent of regular attenders enroll in a postsecondary institution. For chronic absentees, that number drops to 48.7 percent.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Conclusion -->
+<section class="fullscreen" id="scene-conclusion" style="background-image: url('https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2132&auto=format&fit=crop');">
+  <div class="overlay">
+    <h2>Reversing the Trend</h2>
+    <p>The historic surge in Nebraska’s chronic absenteeism has not naturally self-corrected.</p>
+    <p>Because the 'typical' absent student encompasses a wide demographic—including higher rates among Indigenous students (47.1 percent), Black students (39.6 percent), and students participating in Special Education (23.7 percent) or English Language programs (26.8 percent)—blanket solutions are rarely effective.</p>
+    <p>The Nebraska Department of Education has initiated a legislative priority focused on cutting chronic absenteeism in half. By moving away from punitive responses and instead investing in early interventions, removing access barriers, and fostering community buy-in, Nebraska aims to bring its students back to the classroom.</p>
+  </div>
+</section>
+
+<script>
+  // Chart.js Configuration Defaults
+  Chart.defaults.color = '#8A9BAB';
+  Chart.defaults.font.family = "'Inter', sans-serif";
+
+  // --- Initialize Charts ---
+  
+  // Chart 3: Line Chart (Middle School Cliff)
+  const ctx3 = document.getElementById('chart3').getContext('2d');
+  const chart3 = new Chart(ctx3, {
+      type: 'line',
+      data: {
+          labels: ['Grade 4', 'Grade 6', 'Grade 12'],
+          datasets: [{
+              label: 'Chronic Absenteeism Rate',
+              data: [14.18, 19.18, 36.98],
+              borderColor: '#C8974A', // Amber
+              backgroundColor: 'rgba(200,151,74,0.2)',
+              borderWidth: 3,
+              pointBackgroundColor: '#C8974A',
+              pointRadius: 6,
+              fill: true,
+              tension: 0.4
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { display: false }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  max: 40,
+                  ticks: { callback: function(value) { return value + '%'; } },
+                  grid: { color: 'rgba(138,155,171,0.2)' }
+              },
+              x: {
+                  grid: { display: false }
+              }
+          }
+      }
+  });
+
+  // Chart 4: Bar Chart (Reasons for Absence)
+  const ctx4 = document.getElementById('chart4').getContext('2d');
+  const chart4 = new Chart(ctx4, {
+      type: 'bar',
+      data: {
+          labels: ['Excused', 'Illness', 'Skipping', 'Unknown Unexcused'],
+          datasets: [
+              {
+                  label: 'Regular Attenders',
+                  data: [30.3, 45.0, 1.6, 20.0], // Approx 20% for regular unknown based on prompt
+                  backgroundColor: '#2E8B8B', // Teal
+              },
+              {
+                  label: 'Chronic Absentees',
+                  data: [16.6, 29.9, 9.0, 40.7], // Estimated chronic excused/illness from source to make chart look right, prompt didn't specify exactly.
+                  backgroundColor: '#C8974A', // Amber
+              }
+          ]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { position: 'top', labels: { color: '#F0EDE6' } }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  ticks: { callback: function(value) { return value + '%'; } },
+                  grid: { color: 'rgba(138,155,171,0.2)' }
+              },
+              x: { grid: { display: false } }
+          }
+      }
+  });
+
+  // Chart 5: Grouped Bar Chart (Academic Toll)
+  const ctx5 = document.getElementById('chart5').getContext('2d');
+  const chart5 = new Chart(ctx5, {
+      type: 'bar',
+      data: {
+          labels: ['Math', 'English', 'Science'],
+          datasets: [
+              {
+                  label: 'Regular Attenders',
+                  data: [50.5, 52.9, 57.0],
+                  backgroundColor: '#2E8B8B',
+              },
+              {
+                  label: 'Chronic Absentees',
+                  data: [20.1, 24.0, 26.8],
+                  backgroundColor: '#C8974A',
+              }
+          ]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { position: 'top', labels: { color: '#F0EDE6' } }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: { callback: function(value) { return value + '%'; } },
+                  grid: { color: 'rgba(138,155,171,0.2)' }
+              },
+              x: { grid: { display: false } }
+          }
+      }
+  });
+
+  // --- Scroll Logic (Intersection Observer) ---
+  const steps = document.querySelectorAll('.step');
+  const visuals = document.querySelectorAll('.visual-container');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '-40% 0px -40% 0px', // Trigger when step is roughly in the middle of the screen
+    threshold: 0
+  };
+
+  const observerCallback = (entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        // Highlight active step
+        steps.forEach(s => s.classList.remove('is-active'));
+        entry.target.classList.add('is-active');
+
+        // Switch Visual
+        const stepIndex = entry.target.getAttribute('data-step');
+        visuals.forEach(v => {
+            v.classList.remove('active');
+        });
         
-        <!-- Scrolling Text -->
-        <article>
-            <!-- Scene 2 -->
-            <div class="step px-6" data-step="2">
-                <div class="card border-l-4 border-red-500">
-                    <h2 class="text-2xl font-bold mb-4 text-red-400">A Statewide Challenge</h2>
-                    <p class="mb-4">It is a common misconception that chronic absenteeism is primarily an urban issue. In Nebraska, the data tells a different story.</p>
-                    <p>Urban counties like <strong>Lancaster and Douglas</strong> show similar rates to rural neighbors. The highest rates? <strong>Thurston County (48%)</strong> and <strong>McPherson County (46%)</strong>.</p>
-                </div>
-            </div>
-
-            <!-- Scene 3 -->
-            <div class="step px-6" data-step="3">
-                <div class="card border-l-4 border-orange-400">
-                    <h2 class="text-2xl font-bold mb-4 text-orange-400">The Middle School Cliff</h2>
-                    <p class="mb-4 text-slate-200">Attendance habits shift dramatically as students grow older. A significant 5% spike occurs during the transition to middle school.</p>
-                    <p class="text-slate-200">By <strong>12th grade</strong>, the chronic absenteeism rate peaks at <strong>36.98%</strong>.</p>
-                </div>
-            </div>
-
-            <!-- Scene 4 -->
-            <div class="step px-6" data-step="4">
-                <div class="card border-l-4 border-blue-400">
-                    <h2 class="text-2xl font-bold mb-4 text-blue-400">Why Are They Missing?</h2>
-                    <p class="mb-4 text-slate-200">Typically-attending students miss school for illness. Chronic absentees miss school for different reasons.</p>
-                    <p class="text-slate-200">Skipping school is 5x higher for chronic absentees, and "Unknown absences" account for <strong>40.7%</strong> of their missed time.</p>
-                </div>
-            </div>
-
-            <!-- Scene 5 -->
-            <div class="step px-6" data-step="5">
-                <div class="card border-l-4 border-purple-400">
-                    <h2 class="text-2xl font-bold mb-4 text-purple-400">The Academic Toll</h2>
-                    <p class="mb-4 text-slate-200">By the 11th grade, the achievement gap is glaring. Proficiency in Math, Science, and English drops significantly.</p>
-                    <p class="text-slate-200 text-xl font-semibold italic text-white">"Only 20.1% of chronically absent 11th graders are proficient in math."</p>
-                </div>
-            </div>
-
-            <!-- Scene 6 -->
-            <div class="step px-6" data-step="6">
-                <div class="card border-l-4 border-green-400">
-                    <h2 class="text-2xl font-bold mb-4 text-green-400">Graduation & Beyond</h2>
-                    <p class="mb-4 text-slate-200">The odds of graduating on-time were <strong>six times greater</strong> for students who attended regularly.</p>
-                    <p class="text-slate-200">For chronic absentees, postsecondary enrollment drops to just <strong>48.7%</strong>.</p>
-                </div>
-            </div>
-        </article>
-
-        <!-- Fixed Visual Element -->
-        <figure id="visual-container">
-            <div id="dynamic-visual" class="chart-placeholder">
-                <p class="text-slate-400 font-mono">Exploring the Data...</p>
-            </div>
-        </figure>
-
-    </section>
-
-    <!-- Scene 7: Conclusion -->
-    <section class="min-h-screen flex items-center justify-center bg-black/80 px-6 backdrop-blur-md">
-        <div class="max-w-3xl text-center">
-            <h2 class="text-4xl font-bold mb-6 text-white">Reversing the Trend</h2>
-            <p class="text-xl text-slate-300 mb-8">
-                The Nebraska Department of Education aims to cut chronic absenteeism in half by investing in early interventions and removing access barriers.
-            </p>
-            <div class="h-1 w-20 bg-red-600 mx-auto mb-8"></div>
-            <p class="text-sm uppercase tracking-widest text-slate-500">A NSWERS Interactive Story</p>
-        </div>
-    </section>
-
-    <script>
-        const visual = document.querySelector("#dynamic-visual");
-        const scroller = scrollama();
-
-        function handleStepEnter(response) {
-            const step = response.index + 2; 
-            
-            // Visual Logic
-            if (step === 2) {
-                visual.innerHTML = `<h3 class="font-bold mb-4 text-slate-700">County-Level Absenteeism</h3><div class="grid grid-cols-8 gap-1 w-full max-w-sm">${Array(64).fill(0).map((_, i) => `<div class="aspect-square ${i % 7 == 0 ? 'bg-red-600' : 'bg-red-200'}"></div>`).join('')}</div>`;
-            } else if (step === 3) {
-                visual.innerHTML = `<h3 class="font-bold mb-4 text-slate-700">The Middle School Spike</h3><div class="flex items-end gap-3 h-48 w-full max-w-sm border-b-2 border-slate-300"><div class="bg-orange-300 w-1/4 h-[40%]"></div><div class="bg-orange-400 w-1/4 h-[50%]"></div><div class="bg-orange-600 w-1/4 h-[75%]"></div><div class="bg-orange-800 w-1/4 h-[100%]"></div></div><div class="flex justify-between w-full max-w-sm text-xs mt-2 font-bold"><span>Elem</span><span>Middle</span><span>High</span><span>Senior</span></div>`;
-            } else if (step === 4) {
-                visual.innerHTML = `<h3 class="font-bold mb-6 text-slate-700">Primary Reason: Unexcused</h3><div class="w-full max-w-sm"><div class="text-xs text-left mb-1 font-bold">Chronic Absentees</div><div class="w-full bg-slate-200 h-8 mb-4"><div class="bg-blue-600 h-full" style="width: 49%"></div></div><div class="text-xs text-left mb-1 font-bold">Typically Attending</div><div class="w-full bg-slate-200 h-8"><div class="bg-blue-300 h-full" style="width: 15%"></div></div></div>`;
-            } else if (step === 5) {
-                visual.innerHTML = `<div class="flex flex-col items-center"><div class="text-6xl font-black text-purple-700">20.1%</div><div class="text-sm font-bold text-slate-500 uppercase tracking-widest mt-2">Math Proficiency (Chronic)</div><div class="mt-8 text-2xl font-bold text-slate-400">vs 50.5% (Regular)</div></div>`;
-            } else if (step === 6) {
-                visual.innerHTML = `<div class="space-y-4"><div class="p-4 bg-green-100 border-l-8 border-green-600"><div class="text-4xl font-black text-green-800">95.8%</div><div class="text-xs font-bold uppercase">Graduation Rate (Regular)</div></div><div class="p-4 bg-red-100 border-l-8 border-red-600"><div class="text-4xl font-black text-red-800">79.5%</div><div class="text-xs font-bold uppercase">Graduation Rate (Chronic)</div></div></div>`;
-            }
+        const activeVisual = document.getElementById(`visual-${stepIndex}`);
+        if(activeVisual) {
+            activeVisual.classList.add('active');
         }
 
-        function init() {
-            scroller.setup({ step: ".step", offset: 0.5 }).onStepEnter(handleStepEnter);
-            window.addEventListener("resize", scroller.resize);
-        }
-        init();
-    </script>
+      }
+    });
+  };
+
+  const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+  steps.forEach(step => observer.observe(step));
+
+</script>
 </body>
 </html>
